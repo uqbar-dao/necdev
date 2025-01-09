@@ -38,11 +38,24 @@ impl RepoExtractor {
 
         // Add common build artifacts and system files
         let common_patterns = [
-            "*.pyc", "__pycache__", "node_modules", "dist", "build",
-            ".git", ".DS_Store", "*.so", "*.dll", "*.dylib",
-            "target/", "bin/", "obj/", ".idea/", ".vscode/",
+            "*.pyc",
+            "__pycache__",
+            "node_modules",
+            "dist",
+            "build",
+            ".git",
+            ".DS_Store",
+            "*.so",
+            "*.dll",
+            "*.dylib",
+            "target/",
+            "bin/",
+            "obj/",
+            ".idea/",
+            ".vscode/",
         ];
-        self.ignored_patterns.extend(common_patterns.iter().map(|s| s.to_string()));
+        self.ignored_patterns
+            .extend(common_patterns.iter().map(|s| s.to_string()));
         Ok(())
     }
 
@@ -60,11 +73,26 @@ impl RepoExtractor {
 
         // Common build and output directory names to exclude
         let build_dirs: HashSet<_> = [
-            "build", "dist", "target", "out", "output", "bin",
-            "release", "debug", "builds", "deploy", "compiled",
-            "coverage", "site-packages", "artifacts", "obj",
+            "build",
+            "dist",
+            "target",
+            "out",
+            "output",
+            "bin",
+            "release",
+            "debug",
+            "builds",
+            "deploy",
+            "compiled",
+            "coverage",
+            "site-packages",
+            "artifacts",
+            "obj",
             "node_modules",
-        ].iter().map(|s| s.to_lowercase()).collect();
+        ]
+        .iter()
+        .map(|s| s.to_lowercase())
+        .collect();
 
         for component in file_path.components() {
             if let std::path::Component::Normal(os_str) = component {
@@ -72,7 +100,10 @@ impl RepoExtractor {
                 if build_dirs.contains(&part) {
                     return false;
                 }
-                if ["build", "dist", "target"].iter().any(|prefix| part.contains(prefix)) {
+                if ["build", "dist", "target"]
+                    .iter()
+                    .any(|prefix| part.contains(prefix))
+                {
                     return false;
                 }
             }
@@ -80,7 +111,10 @@ impl RepoExtractor {
 
         let rel_path = file_path.strip_prefix(&self.repo_path).unwrap_or(file_path);
         let rel_path_str = rel_path.to_string_lossy();
-        let file_name = file_path.file_name().map(|s| s.to_string_lossy()).unwrap_or_default();
+        let file_name = file_path
+            .file_name()
+            .map(|s| s.to_string_lossy())
+            .unwrap_or_default();
 
         for pattern in &self.ignored_patterns {
             if let Ok(glob_pattern) = Pattern::new(pattern) {
@@ -94,7 +128,8 @@ impl RepoExtractor {
     }
 
     fn extract_content(&mut self) -> Result<String> {
-        self.output.push("# Repository Content Summary\n".to_string());
+        self.output
+            .push("# Repository Content Summary\n".to_string());
 
         // Process documentation
         self.output.push("## Documentation\n".to_string());
@@ -125,9 +160,8 @@ impl RepoExtractor {
 
     fn process_source_code(&mut self) -> Result<()> {
         let code_extensions = [
-            "py", "js", "ts", "jsx", "tsx", "java", "cpp", "hpp",
-            "h", "c", "cs", "go", "rs", "swift", "kt", "rb",
-            "php", "scala", "clj", "ex", "exs"
+            "py", "js", "ts", "jsx", "tsx", "java", "cpp", "hpp", "h", "c", "cs", "go", "rs",
+            "swift", "kt", "rb", "php", "scala", "clj", "ex", "exs",
         ];
 
         let mut source_files = Vec::new();
@@ -148,12 +182,14 @@ impl RepoExtractor {
             if let Ok(content) = fs::read_to_string(&source_file) {
                 let content = content.trim();
                 if !content.is_empty() {
-                    let rel_path = source_file.strip_prefix(&self.repo_path)
+                    let rel_path = source_file
+                        .strip_prefix(&self.repo_path)
                         .unwrap_or(&source_file)
                         .display();
                     self.output.push(format!("\n### {}\n", rel_path));
 
-                    let extension = source_file.extension()
+                    let extension = source_file
+                        .extension()
                         .and_then(|ext| ext.to_str())
                         .unwrap_or("");
                     self.output.push(format!("```{}", extension));
@@ -173,8 +209,7 @@ pub async fn execute(repo_path: &str, output: &str) -> Result<()> {
     let mut extractor = RepoExtractor::new(repo_path)?;
     let content = extractor.extract_content()?;
 
-    fs::write(output, content)
-        .with_context(|| format!("Failed to write output to {}", output))?;
+    fs::write(output, content).with_context(|| format!("Failed to write output to {}", output))?;
 
     info!("Content extracted successfully to: {}", output);
     Ok(())
