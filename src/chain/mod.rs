@@ -15,6 +15,8 @@ use crate::KIT_CACHE;
 
 include!("../../target/chain_includes.rs");
 
+const OWNER_ADDRESS: &str = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"; // first account on anvil
+
 const DEFAULT_MAX_ATTEMPTS: u16 = 16;
 
 const PREDEPLOY_CONTRACTS: &[(&str, &str)] = &[
@@ -27,18 +29,164 @@ const PREDEPLOY_CONTRACTS: &[(&str, &str)] = &[
         include_str!("./bytecode/multicall.txt"),
     ),
     (
-        "0x000000000033e5CCbC52Ec7BDa87dB768f9aA93F", // Kimap
-        include_str!("./bytecode/kimap.txt"),
-    ),
-    (
         "0x000000000012d439e33aAD99149d52A5c6f980Dc", // KinoAccount
         include_str!("./bytecode/kinoaccount.txt"),
     ),
     (
-        "0x000000000013d439e33aAD99149d52A5c6f980Dc", // KinoAccountMinter TODO: doublecheck this on mainnet
-        include_str!("./bytecode/kinoaccountminter.txt"),
+        "0x000000000033e5CCbC52Ec7BDa87dB768f9aA93F", // Kimap proxy
+        include_str!("./bytecode/erc1967proxy.txt"),
+    ),
+    (
+        "0x969cAbCE3625224BA3d340ea4dC2f929301188Ad", // Kimap impl
+        include_str!("./bytecode/kimap.txt"),
+    ),
+    // (
+    //     "0x000000000013d439e33aAD99149d52A5c6f980Dc", // KinoAccountMinter TODO: doublecheck this on mainnet
+    //      Otherwise non-owner minting from .os and .dev will not work.
+    //     include_str!("./bytecode/kinoaccountminter.txt"),
+    // ),
+];
+
+const STORAGE_SLOTS: &[(&str, &str, &str)] = &[(
+    "0x000000000033e5CCbC52Ec7BDa87dB768f9aA93F", // Kimap proxy
+    "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc", // implementation slot
+    "0x000000000000000000000000969cAbCE3625224BA3d340ea4dC2f929301188Ad", // implementation address
+)];
+
+const TRANSACTIONS: &[(&str, &str)] = &[
+    // initialize Kimap
+    // cast calldata "initialize(address)" 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+    (
+        "0x000000000033e5CCbC52Ec7BDa87dB768f9aA93F",
+        "0xc4d66de8000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+    ),
+    // mint .os through zeroth TBA
+    // cast calldata "execute(address,uint256,bytes,uint8)" 0x000000000033e5CCbC52Ec7BDa87dB768f9aA93F 0 $(cast calldata "mint(address,bytes,bytes,address)" 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 $(cast --from-ascii "os") $(cast --from-ascii "") 0x000000000012d439e33aad99149d52a5c6f980dc) 0
+    (
+        "0x4bb0778bb92564bf8e82d0b3271b7512443fb060",
+        "0x51945447000000000000000000000000000000000033e5ccbc52ec7bda87db768f9aa93f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4094cefed000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000012d439e33aad99149d52a5c6f980dc00000000000000000000000000000000000000000000000000000000000000026f73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    ),
+    // mint .dev through zeroth TBA
+    // cast calldata "execute(address,uint256,bytes,uint8)" 0x000000000033e5CCbC52Ec7BDa87dB768f9aA93F 0 $(cast calldata "mint(address,bytes,bytes,address)" 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 $(cast --from-ascii "dev") $(cast --from-ascii "") 0x000000000012d439e33aad99149d52a5c6f980dc) 0
+    (
+        "0x4bb0778bb92564bf8e82d0b3271b7512443fb060",
+        "0x51945447000000000000000000000000000000000033e5ccbc52ec7bda87db768f9aa93f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4094cefed000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000012d439e33aad99149d52a5c6f980dc00000000000000000000000000000000000000000000000000000000000000036465760000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
     ),
 ];
+
+#[instrument(level = "trace", skip_all)]
+async fn initialize_contracts(port: u16) -> Result<()> {
+    let client = Client::new();
+    let url = format!("http://localhost:{}", port);
+
+    // Impersonate owner account
+    let request_body = serde_json::json!({
+        "jsonrpc": "2.0",
+        "method": "anvil_impersonateAccount",
+        "params": [OWNER_ADDRESS],
+        "id": 1
+    });
+    let _: serde_json::Value = client
+        .post(&url)
+        .json(&request_body)
+        .send()
+        .await?
+        .json()
+        .await?;
+
+    // Set storage slots
+    for (address, slot, value) in STORAGE_SLOTS {
+        info!("Setting storage at {} slot {}", address, slot);
+        let request_body = serde_json::json!({
+            "jsonrpc": "2.0",
+            "method": "anvil_setStorageAt",
+            "params": [address, slot, value],
+            "id": 1
+        });
+        let _: serde_json::Value = client
+            .post(&url)
+            .json(&request_body)
+            .send()
+            .await?
+            .json()
+            .await?;
+    }
+
+    // Get current nonce
+    let request_body = serde_json::json!({
+        "jsonrpc": "2.0",
+        "method": "eth_getTransactionCount",
+        "params": [OWNER_ADDRESS, "latest"],
+        "id": 1
+    });
+    let response: serde_json::Value = client
+        .post(&url)
+        .json(&request_body)
+        .send()
+        .await?
+        .json()
+        .await?;
+
+    let nonce_hex = response["result"]
+        .as_str()
+        .ok_or_else(|| eyre!("Invalid nonce response"))?
+        .trim_start_matches("0x");
+
+    let mut nonce = u64::from_str_radix(nonce_hex, 16)?;
+
+    // Execute all transactions
+    for (to, data) in TRANSACTIONS {
+        info!("Sending transaction to {} with nonce {}", to, nonce);
+        let request_body = serde_json::json!({
+            "jsonrpc": "2.0",
+            "method": "eth_sendTransaction",
+            "params": [{
+                "from": OWNER_ADDRESS,
+                "to": to,
+                "data": data,
+                "nonce": format!("0x{:x}", nonce),
+                "gas": "0x500000",
+            }],
+            "id": 1
+        });
+
+        let res: serde_json::Value = client
+            .post(&url)
+            .json(&request_body)
+            .send()
+            .await?
+            .json()
+            .await?;
+
+        if let Some(error) = res.get("error") {
+            println!("Transaction failed: {:?}", error);
+            println!("Transaction to: {}", to);
+            println!("Data: {}", data);
+        }
+
+        info!("Transaction result: {:?}", res);
+        nonce += 1;
+    }
+
+    println!("done");
+    // Stop impersonating
+    let request_body = serde_json::json!({
+        "jsonrpc": "2.0",
+        "method": "anvil_stopImpersonatingAccount",
+        "params": [OWNER_ADDRESS],
+        "id": 1
+    });
+    let res: serde_json::Value = client
+        .post(&url)
+        .json(&request_body)
+        .send()
+        .await?
+        .json()
+        .await?;
+    println!("imp {:?}", res);
+
+    Ok(())
+}
 
 #[instrument(level = "trace", skip_all)]
 pub async fn start_chain(
@@ -52,6 +200,8 @@ pub async fn start_chain(
 
     info!("Checking for Anvil on port {}...", port);
     if wait_for_anvil(port, 1, None).await.is_ok() {
+        predeploy_contracts(port).await?;
+        initialize_contracts(port).await?;
         return Ok(None);
     }
 
@@ -77,6 +227,14 @@ pub async fn start_chain(
         let _ = child.kill();
         return Err(e.wrap_err("Failed to pre-deploy contracts"));
     }
+    println!("Done pre-deploying contracts.");
+
+    if let Err(e) = initialize_contracts(port).await {
+        let _ = child.kill();
+        return Err(e.wrap_err("Failed to initialize contracts"));
+    }
+
+    println!("Done initializing contracts.");
 
     Ok(Some(child))
 }
@@ -171,6 +329,7 @@ async fn predeploy_contracts(port: u16) -> Result<()> {
             info!("Warning: Different code found at {}", address);
         }
     }
+
     Ok(())
 }
 
