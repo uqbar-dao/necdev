@@ -6,6 +6,7 @@ pub mod chain;
 pub mod connect;
 pub mod dev_ui;
 pub mod inject_message;
+pub mod mdify;
 pub mod new;
 pub mod publish;
 pub mod remove_package;
