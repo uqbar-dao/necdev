@@ -13,8 +13,6 @@ use crate::run_tests::types::BroadcastRecvBool;
 use crate::setup::{check_foundry_deps, get_deps};
 use crate::KIT_CACHE;
 
-include!("../../target/chain_includes.rs");
-
 const OWNER_ADDRESS: &str = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"; // first account on anvil
 const DOT_OS_TBA: &str = "0xbE46837617f8304Aa5E6d0aE62B74340251f48Bf"; // dot OS TBA
 
@@ -180,7 +178,7 @@ async fn initialize_contracts(port: u16) -> Result<()> {
         "params": [OWNER_ADDRESS],
         "id": 1
     });
-    let res: serde_json::Value = client
+    let _: serde_json::Value = client
         .post(&url)
         .json(&request_body)
         .send()
