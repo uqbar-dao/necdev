@@ -213,7 +213,7 @@ fn handle_message(
 
 call_init!(init);
 fn init(our: Address) {
-    init_logging(&our, Level::DEBUG, Level::INFO, None, None).unwrap();
+    init_logging(Level::DEBUG, Level::INFO, None, None, None).unwrap();
     info!("worker: begin");
     let start = std::time::Instant::now();
 

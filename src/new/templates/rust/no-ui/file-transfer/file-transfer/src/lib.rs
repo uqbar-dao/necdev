@@ -210,7 +210,7 @@ fn handle_tester_setup(our: &Address, drive_path: &str) -> anyhow::Result<()> {
 
 call_init!(init);
 fn init(our: Address) {
-    init_logging(&our, Level::DEBUG, Level::INFO, None, None).unwrap();
+    init_logging(Level::DEBUG, Level::INFO, None, None, None).unwrap();
     info!("begin");
 
     let drive_path = create_drive(our.package_id(), "files", None).unwrap();
