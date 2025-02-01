@@ -28,7 +28,6 @@ sol! {
         address who,
         bytes calldata label,
         bytes calldata initialization,
-        bytes calldata erc721Data,
         address implementation
     ) external returns (
         address tba
@@ -288,7 +287,6 @@ async fn prepare_kimap_put(
             who: wallet_address,
             label: name.into(),
             initialization: multicall.into(),
-            erc721Data: Bytes::default(),
             implementation: kino_account_impl,
         }
         .abi_encode();
@@ -419,7 +417,7 @@ pub async fn execute(
     let tx = provider.send_raw_transaction(&tx_encoded).await?;
     let tx_hash = format!("{:?}", tx.tx_hash());
     let link = make_remote_link(
-        &format!("https://optimistic.etherscan.io/tx/{tx_hash}"),
+        &format!("https://basescan.org/tx/{tx_hash}"),
         &tx_hash,
     );
     info!(

@@ -37,6 +37,13 @@ struct Commit {
     sha: String,
 }
 
+fn parse_u64_with_underscores(s: &str) -> Result<u64, &'static str> {
+    let clean_string = s.replace('_', "");
+    clean_string
+        .parse::<u64>()
+        .map_err(|_| "Invalid number format")
+}
+
 fn parse_u128_with_underscores(s: &str) -> Result<u128, &'static str> {
     let clean_string = s.replace('_', "");
     clean_string
@@ -1120,7 +1127,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .long("gas-limit")
                 .help("The ETH transaction gas limit")
                 .default_value("1_000_000")
-                .value_parser(clap::builder::ValueParser::new(parse_u128_with_underscores))
+                .value_parser(clap::builder::ValueParser::new(parse_u64_with_underscores))
                 .required(false)
             )
             .arg(Arg::new("MAX_PRIORITY_FEE_PER_GAS")
