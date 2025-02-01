@@ -416,10 +416,7 @@ pub async fn execute(
     let tx_encoded = tx_envelope.encoded_2718();
     let tx = provider.send_raw_transaction(&tx_encoded).await?;
     let tx_hash = format!("{:?}", tx.tx_hash());
-    let link = make_remote_link(
-        &format!("https://basescan.org/tx/{tx_hash}"),
-        &tx_hash,
-    );
+    let link = make_remote_link(&format!("https://basescan.org/tx/{tx_hash}"), &tx_hash);
     info!(
         "{} {name} tx sent: {link}",
         if *unpublish { "unpublish" } else { "publish" }
