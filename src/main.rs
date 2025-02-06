@@ -396,6 +396,7 @@ async fn execute(
             let max_fee_per_gas = matches
                 .get_one::<u128>("MAX_FEE_PER_GAS")
                 .and_then(|mfpg| Some(mfpg.clone()));
+            let mock = matches.get_one::<bool>("MOCK").unwrap();
 
             publish::execute(
                 &package_dir,
@@ -409,6 +410,7 @@ async fn execute(
                 *gas_limit,
                 max_priority_fee,
                 max_fee_per_gas,
+                mock,
             )
             .await
         }
@@ -1144,6 +1146,13 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .long("fee-per-gas")
                 .help("The ETH transaction max fee per gas [default: estimated from network conditions]")
                 .value_parser(clap::builder::ValueParser::new(parse_u128_with_underscores))
+                .required(false)
+            )
+            .arg(Arg::new("MOCK")
+                .action(ArgAction::SetTrue)
+                .short('m')
+                .long("mock")
+                .help("If set, don't actually publish: just dry-run")
                 .required(false)
             )
         )
