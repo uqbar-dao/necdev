@@ -162,11 +162,11 @@ async fn check_remote_metadata(
 
     // TODO: add derive(PartialEq) to Erc721
     let local_metadata_string = serde_json::to_string(&metadata).unwrap_or_default();
-    let local_metadata_value: serde_json::Value = serde_json::from_str(&local_metadata_string)
-        .unwrap_or_default();
+    let local_metadata_value: serde_json::Value =
+        serde_json::from_str(&local_metadata_string).unwrap_or_default();
     let remote_metadata_string = serde_json::to_string(&remote_metadata).unwrap_or_default();
-    let remote_metadata_value: serde_json::Value = serde_json::from_str(&remote_metadata_string)
-        .unwrap_or_default();
+    let remote_metadata_value: serde_json::Value =
+        serde_json::from_str(&remote_metadata_string).unwrap_or_default();
     if local_metadata_value != remote_metadata_value {
         return Err(eyre!(
             "{} and {} metadata do not match",
@@ -429,10 +429,7 @@ pub async fn execute(
     } else {
         let tx = provider.send_raw_transaction(&tx_encoded).await?;
         let tx_hash = format!("{:?}", tx.tx_hash());
-        let link = make_remote_link(
-            &format!("https://basescan.org/tx/{tx_hash}"),
-            &tx_hash,
-        );
+        let link = make_remote_link(&format!("https://basescan.org/tx/{tx_hash}"), &tx_hash);
         info!(
             "{} {name} tx sent: {link}",
             if *unpublish { "unpublish" } else { "publish" }
