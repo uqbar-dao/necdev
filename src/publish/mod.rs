@@ -161,7 +161,13 @@ async fn check_remote_metadata(
     let remote_metadata = read_and_update_metadata(&remote_metadata_dir)?;
 
     // TODO: add derive(PartialEq) to Erc721
-    if serde_json::to_string(&metadata)? != serde_json::to_string(&remote_metadata)? {
+    let local_metadata_string = serde_json::to_string(&metadata).unwrap_or_default();
+    let local_metadata_value: serde_json::Value =
+        serde_json::from_str(&local_metadata_string).unwrap_or_default();
+    let remote_metadata_string = serde_json::to_string(&remote_metadata).unwrap_or_default();
+    let remote_metadata_value: serde_json::Value =
+        serde_json::from_str(&remote_metadata_string).unwrap_or_default();
+    if local_metadata_value != remote_metadata_value {
         return Err(eyre!(
             "{} and {} metadata do not match",
             make_local_file_link_path(&package_dir.join("metadata.json"), "Local")
@@ -315,6 +321,7 @@ pub async fn execute(
     gas_limit: u64,
     max_priority_fee_per_gas: Option<u128>,
     max_fee_per_gas: Option<u128>,
+    mock: &bool,
 ) -> Result<()> {
     if !package_dir.join("pkg").exists() {
         return Err(eyre!(
@@ -414,12 +421,19 @@ pub async fn execute(
 
     let tx_envelope = tx.build(&wallet).await?;
     let tx_encoded = tx_envelope.encoded_2718();
-    let tx = provider.send_raw_transaction(&tx_encoded).await?;
-    let tx_hash = format!("{:?}", tx.tx_hash());
-    let link = make_remote_link(&format!("https://basescan.org/tx/{tx_hash}"), &tx_hash);
-    info!(
-        "{} {name} tx sent: {link}",
-        if *unpublish { "unpublish" } else { "publish" }
-    );
+    if *mock {
+        info!(
+            "{} {name} tx mock successful",
+            if *unpublish { "unpublish" } else { "publish" }
+        );
+    } else {
+        let tx = provider.send_raw_transaction(&tx_encoded).await?;
+        let tx_hash = format!("{:?}", tx.tx_hash());
+        let link = make_remote_link(&format!("https://basescan.org/tx/{tx_hash}"), &tx_hash);
+        info!(
+            "{} {name} tx sent: {link}",
+            if *unpublish { "unpublish" } else { "publish" }
+        );
+    }
     Ok(())
 }
