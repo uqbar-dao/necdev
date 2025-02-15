@@ -1,4 +1,4 @@
-import { printToTerminal, receive, sendAndAwaitResponse, sendResponse } from "kinode:process/standard@0.7.0";
+import { printToTerminal, receive, sendAndAwaitResponse, sendResponse } from "kinode:process/standard@1.0.0";
 
 function parseAddress(addressString) {
     const [node, rest] = addressString.split('@');
@@ -36,48 +36,62 @@ function addToArchive(conversation, author, content, messageArchive) {
 }
 
 function handleMessage(ourNode, messageArchive) {
+    printToTerminal(0, `a`);
     const [source, message] = receive();
+    printToTerminal(0, `b`);
 
     if (message.tag == 'response') {
         throw new Error(`unexpected Response: ${JSON.stringify(message.val)}`);
     } else if (message.tag == 'request') {
+        printToTerminal(0, `c`);
         const { bytes: bodyBytes, string: body0 } = inputBytesToString(message.val.body)
+        printToTerminal(0, `d`);
         const body = JSON.parse(body0);
+        printToTerminal(0, `e`);
         const encoder = new TextEncoder();
         if (body.Send) {
+            printToTerminal(0, `f`);
             const { target, message: messageText } = body.Send;
+            printToTerminal(0, `g`);
             if (target === ourNode) {
+                printToTerminal(0, `h`);
                 printToTerminal(0, `chat|${source.node}: ${messageText}`);
+                printToTerminal(0, `i`);
                 messageArchive = addToArchive(
                     source.node,
                     source.node,
                     messageText,
                     messageArchive,
                 );
+                printToTerminal(0, `j`);
             } else {
+                printToTerminal(0, `k`);
                 sendAndAwaitResponse(
                     {
                         node: target,
                         process: {
                             processName: "chat",
                             packageName: "chat",
-                            publisherNode: "template.os"
+                            publisherNode: "template.os",
                         }
                     },
                     {
                         inherit: false,
                         expectsResponse: 5,
                         body: bodyBytes,
-                        metadata: null
+                        metadata: null,
+                        capabilities: [],
                     },
-                    null
+                    null,
                 );
+                printToTerminal(0, `l`);
                 messageArchive = addToArchive(
                     target,
                     ourNode,
                     messageText,
                     messageArchive,
                 );
+                printToTerminal(0, `m`);
             }
             sendResponse(
                 {
@@ -88,7 +102,9 @@ function handleMessage(ourNode, messageArchive) {
                 },
                 null
             );
+            printToTerminal(0, `n`);
         } else if (body.History) {
+            printToTerminal(0, `o`);
             sendResponse(
                 {
                     inherit: false,
@@ -98,6 +114,7 @@ function handleMessage(ourNode, messageArchive) {
                 },
                 null
             );
+            printToTerminal(0, `p`);
         } else {
             throw new Error(`Unexpected Request: ${body}`)
         }

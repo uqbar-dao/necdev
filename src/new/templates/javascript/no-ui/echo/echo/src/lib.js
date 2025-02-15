@@ -1,4 +1,4 @@
-import { printToTerminal, receive, sendResponse } from "kinode:process/standard@0.7.0";
+import { printToTerminal, receive, sendResponse } from "kinode:process/standard@1.0.0";
 
 function parseAddress(addressString) {
     const [node, rest] = addressString.split('@');

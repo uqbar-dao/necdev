@@ -9,6 +9,6 @@
   "author": "template.os",
   "license": "MIT",
   "dependencies": {
-    "@bytecodealliance/componentize-js": "0.5.0"
+    "@bytecodealliance/componentize-js": "0.15.1"
   }
 }

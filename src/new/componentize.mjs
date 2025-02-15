@@ -14,7 +14,7 @@ const witPath = 'target/wit';
 
 const { component } = await componentize(
     jsSource,
-    { witPath: witPath, worldName: worldName, debug: false },
+    { witPath: witPath, worldName: worldName, debug: false, disableFeatures: ['http'] },
 );
 
 await writeFile(`../pkg/${processName}.wasm`, component);

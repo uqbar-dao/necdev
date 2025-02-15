@@ -47,6 +47,7 @@ const KINODE_WIT_1_0_0_URL: &str =
 const WASI_VERSION: &str = "27.0.0"; // TODO: un-hardcode
 const DEFAULT_WORLD_0_7_0: &str = "process";
 const DEFAULT_WORLD_0_8_0: &str = "process-v0";
+const DEFAULT_WORLD_1_0_0: &str = "process-v1";
 const KINODE_PROCESS_LIB_CRATE_NAME: &str = "kinode_process_lib";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1564,7 +1565,8 @@ async fn compile_package(
     let wit_world = default_world
         .unwrap_or_else(|| match metadata.properties.wit_version {
             None => DEFAULT_WORLD_0_7_0,
-            Some(0) | _ => DEFAULT_WORLD_0_8_0,
+            Some(0) => DEFAULT_WORLD_0_8_0,
+            Some(1) | _ => DEFAULT_WORLD_1_0_0,
         })
         .to_string();
 
