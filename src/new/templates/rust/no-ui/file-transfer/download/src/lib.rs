@@ -1,6 +1,6 @@
-use crate::kinode::process::file_transfer_worker::{DownloadRequest, Request as WorkerRequest};
-use crate::kinode::process::standard::{Address as WitAddress, ProcessId as WitProcessId};
-use kinode_process_lib::{
+use crate::hyperware::process::file_transfer_worker::{DownloadRequest, Request as WorkerRequest};
+use crate::hyperware::process::standard::{Address as WitAddress, ProcessId as WitProcessId};
+use hyperware_process_lib::{
     await_next_message_body, call_init, println, Address, ProcessId, Request,
 };
 

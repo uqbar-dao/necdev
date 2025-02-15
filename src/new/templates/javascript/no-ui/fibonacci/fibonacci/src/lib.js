@@ -1,6 +1,6 @@
 // 240103: Date.now() always returns 0, so this timing does not currently work.
 
-import { printToTerminal, receive, sendResponse } from "kinode:process/standard@0.7.0";
+import { printToTerminal, receive, sendResponse } from "hyperware:process/standard@0.7.0";
 
 function parseAddress(addressString) {
     const [node, rest] = addressString.split('@');

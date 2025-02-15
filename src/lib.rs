@@ -16,8 +16,8 @@ pub mod start_package;
 pub mod update;
 pub mod view_api;
 
-pub const KIT_CACHE: &str = "/tmp/kinode-kit-cache";
-pub const KIT_LOG_PATH_DEFAULT: &str = "/tmp/kinode-kit-cache/logs/log.log";
+pub const KIT_CACHE: &str = "/tmp/hyperware-kit-cache";
+pub const KIT_LOG_PATH_DEFAULT: &str = "/tmp/hyperware-kit-cache/logs/log.log";
 
 wit_bindgen::generate!({
     path: "src/run_tests/wit",

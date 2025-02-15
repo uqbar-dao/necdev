@@ -1,15 +1,15 @@
-use crate::kinode::process::file_transfer::{
+use crate::hyperware::process::file_transfer::{
     FileInfo, Request as TransferRequest, Response as TransferResponse,
 };
-use crate::kinode::process::file_transfer_worker::{
+use crate::hyperware::process::file_transfer_worker::{
     Address as WitAddress, DownloadRequest, Request as WorkerRequest,
 };
-use crate::kinode::process::standard::ProcessId as WitProcessId;
-use crate::kinode::process::tester::{
+use crate::hyperware::process::standard::ProcessId as WitProcessId;
+use crate::hyperware::process::tester::{
     FailResponse, Request as TesterRequest, Response as TesterResponse, RunRequest,
 };
 
-use kinode_process_lib::{
+use hyperware_process_lib::{
     await_message, call_init, our_capabilities, print_to_terminal, println, save_capabilities,
     vfs::File, Address, ProcessId, Request, Response,
 };

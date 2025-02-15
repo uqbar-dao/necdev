@@ -359,7 +359,7 @@ pub fn execute(
             language.to_string(),
             template.to_string(),
             if ui { "'yes ui'" } else { "'no ui'" },
-            "https://book.kinode.org/kit/new.html#existshas-ui-enabled-vesion",
+            "https://book.hyperware.ai/kit/new.html#existshas-ui-enabled-vesion",
         ));
     }
 

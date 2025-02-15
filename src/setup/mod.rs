@@ -94,11 +94,11 @@ fn check_python_venv(python: &str) -> Result<()> {
     info!("Checking for python venv...");
     let venv_result = run_command(
         Command::new(python)
-            .args(&["-m", "venv", "kinode-test-venv"])
+            .args(&["-m", "venv", "hyperware-test-venv"])
             .current_dir("/tmp"),
         false,
     );
-    let venv_dir = PathBuf::from("/tmp/kinode-test-venv");
+    let venv_dir = PathBuf::from("/tmp/hyperware-test-venv");
     if venv_dir.exists() {
         fs::remove_dir_all(&venv_dir)?;
     }

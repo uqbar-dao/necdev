@@ -18,7 +18,7 @@ use color_eyre::eyre::{eyre, Result};
 use fs_err as fs;
 use tracing::{info, instrument};
 
-use kinode_process_lib::kernel_types::Erc721Metadata;
+use hyperware_process_lib::kernel_types::Erc721Metadata;
 
 use crate::build::{download_file, make_pkg_publisher, read_and_update_metadata, zip_pkg};
 use crate::new::is_kimap_safe;
@@ -150,7 +150,7 @@ async fn check_remote_metadata(
     package_dir: &Path,
 ) -> Result<String> {
     let remote_metadata_dir = PathBuf::from(format!(
-        "/tmp/kinode-kit-cache/{}",
+        "/tmp/hyperware-kit-cache/{}",
         metadata.name.as_ref().unwrap(),
     ));
     if !remote_metadata_dir.exists() {

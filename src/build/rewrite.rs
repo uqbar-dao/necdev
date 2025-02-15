@@ -795,7 +795,7 @@ fn rewrite_rust_file(
         // Create the replacement code
         let replacement = format!(
             r#"{{
-        use kinode_process_lib::{{spawn, OnExit, Request}};
+        use hyperware_process_lib::{{spawn, OnExit, Request}};
         {args_type}
 
         {args_instance}
