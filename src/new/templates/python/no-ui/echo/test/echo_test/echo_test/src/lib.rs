@@ -1,8 +1,8 @@
-use crate::kinode::process::tester::{
+use crate::hyperware::process::tester::{
     FailResponse, Request as TesterRequest, Response as TesterResponse, RunRequest,
 };
 
-use kinode_process_lib::{
+use hyperware_process_lib::{
     await_message, call_init, print_to_terminal, Address, ProcessId, Request, Response,
 };
 

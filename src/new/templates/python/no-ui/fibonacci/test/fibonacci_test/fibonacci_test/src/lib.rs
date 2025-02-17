@@ -1,7 +1,7 @@
-use crate::kinode::process::fibonacci::{Request as FibRequest, Response as FibResponse};
-use crate::kinode::process::tester::{Request as TesterRequest, Response as TesterResponse, RunRequest, FailResponse};
+use crate::hyperware::process::fibonacci::{Request as FibRequest, Response as FibResponse};
+use crate::hyperware::process::tester::{Request as TesterRequest, Response as TesterResponse, RunRequest, FailResponse};
 
-use kinode_process_lib::{await_message, call_init, print_to_terminal, Address, ProcessId, Request, Response};
+use hyperware_process_lib::{await_message, call_init, print_to_terminal, Address, ProcessId, Request, Response};
 
 mod tester_lib;
 

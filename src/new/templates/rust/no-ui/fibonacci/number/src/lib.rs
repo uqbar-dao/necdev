@@ -1,5 +1,5 @@
-use crate::kinode::process::fibonacci::{Request as FibonacciRequest, Response as FibonacciResponse};
-use kinode_process_lib::{
+use crate::hyperware::process::fibonacci::{Request as FibonacciRequest, Response as FibonacciResponse};
+use hyperware_process_lib::{
     await_next_message_body, call_init, println, Address, Message, Request,
 };
 

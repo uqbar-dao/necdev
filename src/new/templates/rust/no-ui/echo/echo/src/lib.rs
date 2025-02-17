@@ -1,5 +1,5 @@
-use kinode_process_lib::logging::{error, info, init_logging, Level};
-use kinode_process_lib::{await_message, call_init, println, Address, Message, Response};
+use hyperware_process_lib::logging::{error, info, init_logging, Level};
+use hyperware_process_lib::{await_message, call_init, println, Address, Message, Response};
 
 wit_bindgen::generate!({
     path: "target/wit",

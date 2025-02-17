@@ -1,4 +1,4 @@
-package kinode:process@0.8.0;
+package hyperware:process@0.8.0;
 
 interface standard {
     //

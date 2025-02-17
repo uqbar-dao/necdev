@@ -3,9 +3,9 @@ name = "kit"
 authors = ["Sybil Technologies AG"]
 version = "1.0.0"
 edition = "2021"
-description = "Development toolkit for Kinode"
-homepage = "https://kinode.org"
-repository = "https://github.com/kinode-dao/kit"
+description = "Development toolkit for Hyperware"
+homepage = "https://hyperware.ai"
+repository = "https://github.com/hyperware-ai/kit"
 license = "Apache-2.0"
 
 [build-dependencies]
@@ -42,7 +42,7 @@ color-eyre = { version = "0.6", features = ["capture-spantrace"] }
 dirs = "5.0"
 fs-err = "2.11"
 hex = "0.4"
-kinode_process_lib = "0.10.1"
+hyperware_process_lib = "1.0.2"
 nix = { version = "0.27", features = ["process", "signal", "term"] }
 proc-macro2 = "1.0"
 regex = "1"

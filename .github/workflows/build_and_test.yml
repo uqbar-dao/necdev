@@ -33,70 +33,57 @@ jobs:
           rustup target add wasm32-wasip1
           rustup target add wasm32-wasip1 --toolchain nightly
           cargo install cargo-wasi
-      #- name: Get latest release from foundry-rs/foundry
-      #  id: get-latest-foundry-release
+      - name: Get latest release from foundry-rs/foundry
+        id: get-latest-foundry-release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const repo = {
+              owner: 'foundry-rs',
+              repo: 'foundry',
+              per_page: 1,
+              page: 1,
+            };
+            const releases = await github.rest.repos.listReleases(repo);
+            const preReleases = releases.data.filter(release => release.prerelease);
+
+            // Sort pre-releases by created_at date in descending order
+            preReleases.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            if (preReleases.length === 0) {
+              throw new Error('No pre-releases found');
+            }
+
+            const latestPreRelease = preReleases[0];
+            const asset = latestPreRelease.assets.find(asset => asset.name.match(/foundry_nightly_linux_amd64\.tar\.gz/));
+
+            if (!asset) {
+              throw new Error('Asset not found');
+            }
+            return asset.browser_download_url;
+          result-encoding: string
+      #- name: Get latest release from hyperware-ai/hyperdrive
+      #  id: get-latest-hyperdrive-release
       #  uses: actions/github-script@v6
       #  with:
       #    script: |
       #      const repo = {
-      #        owner: 'foundry-rs',
-      #        repo: 'foundry',
-      #        per_page: 1,
-      #        page: 1,
-      #      };
-      #      const releases = await github.rest.repos.listReleases(repo);
-      #      const preReleases = releases.data.filter(release => release.prerelease);
-
-      #      // Sort pre-releases by created_at date in descending order
-      #      preReleases.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      #      if (preReleases.length === 0) {
-      #        throw new Error('No pre-releases found');
-      #      }
-
-      #      const latestPreRelease = preReleases[0];
-      #      const asset = latestPreRelease.assets.find(asset => asset.name.match(/foundry_nightly_linux_amd64\.tar\.gz/));
-
-      #      if (!asset) {
-      #        throw new Error('Asset not found');
-      #      }
-      #      return asset.browser_download_url;
-      #    result-encoding: string
-      - name: Download Foundry
-        run: wget -q https://github.com/foundry-rs/foundry/releases/download/nightly-c3069a50ba18cccfc4e7d5de9b9b388811d9cc7b/foundry_nightly_linux_amd64.tar.gz -O foundry.tar.gz
-        #run: wget -q ${DOWNLOAD_URL} -O foundry.tar.gz
-        #env:
-        #  DOWNLOAD_URL: ${{ steps.get-latest-foundry-release.outputs.result }}
-      - name: Untar Foundry
-        run: tar zxf foundry.tar.gz
-      - name: Add Foundry to path
-        run: echo "$PWD" >> $GITHUB_PATH
-      - name: Build the release
-        run: ./scripts/build-release.py
-      - name: Unzip the build output
-        run: unzip /tmp/kit-release/kit-x86_64-unknown-linux-gnu.zip
-      #- name: Get latest release from kinode-dao/kinode
-      #  id: get-latest-kinode-release
-      #  uses: actions/github-script@v6
-      #  with:
-      #    script: |
-      #      const repo = {
-      #        owner: 'kinode-dao',
-      #        repo: 'kinode',
+      #        owner: 'hyperware-ai',
+      #        repo: 'hyperdrive',
       #      };
       #      const release = await github.rest.repos.getLatestRelease(repo);
-      #      const asset = release.data.assets.find(asset => asset.name.match(/kinode-x86_64-unknown-linux-gnu\.zip/));
+      #      const asset = release.data.assets.find(asset => asset.name.match(/hyperdrive-x86_64-unknown-linux-gnu\.zip/));
       #      if (!asset) {
       #        throw new Error('Asset not found');
       #      }
       #      return asset.browser_download_url;
       #    result-encoding: string
-      #- name: Download the Kinode release
-      #  run: wget -q ${DOWNLOAD_URL} -O kinode.zip
+      #- name: Download the Hyperdrive release
+      #  run: wget -q ${DOWNLOAD_URL} -O hyperdrive.zip
       #  env:
-      #    DOWNLOAD_URL: ${{ steps.get-latest-kinode-release.outputs.result }}
-      #- name: Unzip the Kinode release
-      #  run: unzip kinode.zip
+      #    DOWNLOAD_URL: ${{ steps.get-latest-hyperdrive-release.outputs.result }}
+      #- name: Unzip the Hyperdrive release
+      #  run: unzip hyperdrive.zip
       - name: Run tests
         run: |
           { ./kit t src/new/templates/tests.toml; } 2>&1

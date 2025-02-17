@@ -1,7 +1,7 @@
-use crate::kinode::process::file_transfer::{
+use crate::hyperware::process::file_transfer::{
     Request as TransferRequest, Response as TransferResponse,
 };
-use kinode_process_lib::{await_next_message_body, call_init, println, Address, Message, Request};
+use hyperware_process_lib::{await_next_message_body, call_init, println, Address, Message, Request};
 
 wit_bindgen::generate!({
     path: "target/wit",

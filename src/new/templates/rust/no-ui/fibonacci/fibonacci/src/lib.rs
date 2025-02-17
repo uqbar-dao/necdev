@@ -1,8 +1,8 @@
-use crate::kinode::process::fibonacci::{
+use crate::hyperware::process::fibonacci::{
     Request as FibonacciRequest, Response as FibonacciResponse,
 };
-use kinode_process_lib::logging::{error, info, init_logging, Level};
-use kinode_process_lib::{await_message, call_init, Address, Message, Response};
+use hyperware_process_lib::logging::{error, info, init_logging, Level};
+use hyperware_process_lib::{await_message, call_init, Address, Message, Response};
 
 wit_bindgen::generate!({
     path: "target/wit",

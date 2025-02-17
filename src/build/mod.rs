@@ -18,7 +18,7 @@ use tracing::{debug, info, instrument, warn};
 use walkdir::WalkDir;
 use zip::write::FileOptions;
 
-use kinode_process_lib::{kernel_types::Erc721Metadata, PackageId};
+use hyperware_process_lib::{kernel_types::Erc721Metadata, PackageId};
 
 use crate::publish::make_local_file_link_path;
 use crate::run_tests::types::BroadcastRecvBool;
@@ -38,16 +38,13 @@ const PYTHON_SRC_PATH: &str = "src/lib.py";
 const RUST_SRC_PATH: &str = "src/lib.rs";
 const PACKAGE_JSON_NAME: &str = "package.json";
 const COMPONENTIZE_MJS_NAME: &str = "componentize.mjs";
-const KINODE_WIT_0_7_0_URL: &str =
-    "https://raw.githubusercontent.com/kinode-dao/kinode-wit/aa2c8b11c9171b949d1991c32f58591c0e881f85/kinode.wit";
-const KINODE_WIT_0_8_0_URL: &str =
-    "https://raw.githubusercontent.com/kinode-dao/kinode-wit/v0.8/kinode.wit";
-const KINODE_WIT_1_0_0_URL: &str =
-    "https://raw.githubusercontent.com/kinode-dao/kinode-wit/v1.0.0/kinode.wit";
+const HYPERWARE_WIT_1_0_0_URL: &str =
+    //"https://raw.githubusercontent.com/hyperware-ai/hyperware-wit/v1.0.0/hyperware.wit";
+    "https://gist.githubusercontent.com/nick1udwig/3cfef4c96d945513c5fbc69d6bfbb4d9/raw/46d9a404813009a2adab54e9cc3e950cbe14ba3f/hyperware.wit";
 const WASI_VERSION: &str = "27.0.0"; // TODO: un-hardcode
 const DEFAULT_WORLD_0_7_0: &str = "process";
 const DEFAULT_WORLD_0_8_0: &str = "process-v0";
-const KINODE_PROCESS_LIB_CRATE_NAME: &str = "kinode_process_lib";
+const KINODE_PROCESS_LIB_CRATE_NAME: &str = "hyperware_process_lib";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct CargoFile {
@@ -276,7 +273,7 @@ pub async fn download_file(url: &str, path: &Path) -> Result<()> {
 pub fn read_metadata(package_dir: &Path) -> Result<Erc721Metadata> {
     let metadata: Erc721Metadata =
         serde_json::from_reader(fs::File::open(package_dir.join("metadata.json"))
-            .wrap_err_with(|| "Missing required metadata.json file. See discussion at https://book.kinode.org/my_first_app/chapter_1.html?highlight=metadata.json#metadatajson")?
+            .wrap_err_with(|| "Missing required metadata.json file. See discussion at https://book.hyperware.ai/my_first_app/chapter_1.html?highlight=metadata.json#metadatajson")?
         )?;
     Ok(metadata)
 }
@@ -361,7 +358,7 @@ fn extract_worlds_from_files(directory: &Path) -> Vec<String> {
     for entry in entries.filter_map(Result::ok) {
         let path = entry.path();
         if !path.is_file()
-            || Some("kinode.wit") == path.file_name().and_then(|s| s.to_str())
+            || Some("hyperware.wit") == path.file_name().and_then(|s| s.to_str())
             || Some("wit") != path.extension().and_then(|s| s.to_str())
         {
             continue;
@@ -813,7 +810,7 @@ async fn compile_javascript_wasm_process(
     verbose: bool,
 ) -> Result<()> {
     info!(
-        "Compiling Javascript Kinode process in {:?}...",
+        "Compiling Javascript Hyperware process in {:?}...",
         process_dir
     );
 
@@ -852,7 +849,7 @@ async fn compile_javascript_wasm_process(
     )?;
 
     info!(
-        "Done compiling Javascript Kinode process in {:?}.",
+        "Done compiling Javascript Hyperware process in {:?}.",
         process_dir
     );
     Ok(())
@@ -865,7 +862,7 @@ async fn compile_python_wasm_process(
     world: &str,
     verbose: bool,
 ) -> Result<()> {
-    info!("Compiling Python Kinode process in {:?}...", process_dir);
+    info!("Compiling Python Hyperware process in {:?}...", process_dir);
 
     let wasm_file_name = process_dir.file_name().and_then(|s| s.to_str()).unwrap();
     let world_name = get_world_or_default(&process_dir.join("target").join("wit"), world);
@@ -890,7 +887,10 @@ async fn compile_python_wasm_process(
         verbose,
     )?;
 
-    info!("Done compiling Python Kinode process in {:?}.", process_dir);
+    info!(
+        "Done compiling Python Hyperware process in {:?}.",
+        process_dir
+    );
     Ok(())
 }
 
@@ -900,7 +900,7 @@ async fn compile_rust_wasm_process(
     features: &str,
     verbose: bool,
 ) -> Result<()> {
-    info!("Compiling Rust Kinode process in {:?}...", process_dir);
+    info!("Compiling Rust Hyperware process in {:?}...", process_dir);
 
     // Paths
     let wit_dir = process_dir.join("target").join("wit");
@@ -1012,7 +1012,10 @@ async fn compile_rust_wasm_process(
         verbose,
     )?;
 
-    info!("Done compiling Rust Kinode process in {:?}.", process_dir);
+    info!(
+        "Done compiling Rust Hyperware process in {:?}.",
+        process_dir
+    );
     Ok(())
 }
 
@@ -1075,11 +1078,9 @@ async fn build_wit_dir(
         fs::remove_dir_all(&wit_dir)?;
     }
     let wit_url = match wit_version {
-        None => KINODE_WIT_0_7_0_URL,
-        Some(0) => KINODE_WIT_0_8_0_URL,
-        Some(1) | _ => KINODE_WIT_1_0_0_URL,
+        Some(1) | _ => HYPERWARE_WIT_1_0_0_URL,
     };
-    download_file(wit_url, &wit_dir.join("kinode.wit")).await?;
+    download_file(wit_url, &wit_dir.join("hyperware.wit")).await?;
     for (file_name, contents) in apis {
         let destination = wit_dir.join(file_name);
         fs::write(&destination, contents)?;
@@ -1274,7 +1275,7 @@ fn extract_imports_exports_from_wit(input: &str) -> (Vec<String>, Vec<String>) {
     let imports: Vec<String> = import_re
         .captures_iter(input)
         .map(|cap| cap[1].to_string())
-        .filter(|s| !(s.contains("wasi") || s.contains("kinode:process/standard")))
+        .filter(|s| !(s.contains("wasi") || s.contains("hyperware:process/standard")))
         .collect();
 
     let exports: Vec<String> = export_re

@@ -1,15 +1,15 @@
 # kit
 
-Tool**kit** for developing on [Kinode OS](https://github.com/kinode-dao/kinode).
+Tool**kit** for developing on [Hyperware](https://hyperware.ai).
 
-Documentation in the [Kinode Book](https://book.kinode.org/kit/kit-dev-toolkit.html); example usage [here](https://book.kinode.org/my_first_app/chapter_1.html).
+Documentation in the [Hyperware Book](https://book.hyperware.ai/kit/kit-dev-toolkit.html); example usage [here](https://book.hyperware.ai/my_first_app/chapter_1.html).
 
 ## Installing
 
 Install with cargo:
 
 ```bash
-cargo install --git https://github.com/kinode-dao/kit --locked
+cargo install --git https://github.com/hyperware-ai/kit --locked
 ```
 
 ### Updating
@@ -17,7 +17,7 @@ cargo install --git https://github.com/kinode-dao/kit --locked
 To update, re-run
 
 ```bash
-cargo install --git https://github.com/kinode-dao/kit --locked
+cargo install --git https://github.com/hyperware-ai/kit --locked
 ```
 
 or use
@@ -63,18 +63,18 @@ kit start-package
 kit --help
 ```
 
-`kit boot-fake-node` can also accept a `--runtime-path` argument that compiles the fake node binary from a local Kinode core repository.
-Use like (substituting path to Kinode core repo):
+`kit boot-fake-node` can also accept a `--runtime-path` argument that compiles the fake node binary from a local [Hyperdrive](https://github.com/hyperware-ai/hyperdrive) repository.
+Use like (substituting path to Hyperdrive repo):
 
 ```bash
-kit boot-fake-node --runtime-path ~/git/kinode
+kit boot-fake-node --runtime-path ~/git/hyperdrive
 ```
 
 `kit` also contains tools for running tests.
 For details and examples, please see
-1. [Kinode Book's example code](https://github.com/kinode-dao/kinode-book/tree/main/code).
-2. `kit`s templates, available through `kit new` or [here](https://github.com/kinode-dao/kit/tree/master/src/new/templates/rust).
-3. [https://github.com/kinode-dao/core_tests](https://github.com/kinode-dao/core_tests).
+1. [Hyperdrive Book's example code](https://github.com/hyperware-ai/hyperware-book/tree/main/code).
+2. `kit`s templates, available through `kit new` or [here](https://github.com/hyperware-ai/kit/tree/master/src/new/templates/rust).
+3. [https://github.com/hyperware-ai/core_tests](https://github.com/hyperware-ai/core_tests).
 
 ## UI Development
 
