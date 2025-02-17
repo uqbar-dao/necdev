@@ -887,7 +887,10 @@ async fn compile_python_wasm_process(
         verbose,
     )?;
 
-    info!("Done compiling Python Hyperware process in {:?}.", process_dir);
+    info!(
+        "Done compiling Python Hyperware process in {:?}.",
+        process_dir
+    );
     Ok(())
 }
 
@@ -1009,7 +1012,10 @@ async fn compile_rust_wasm_process(
         verbose,
     )?;
 
-    info!("Done compiling Rust Hyperware process in {:?}.", process_dir);
+    info!(
+        "Done compiling Rust Hyperware process in {:?}.",
+        process_dir
+    );
     Ok(())
 }
 

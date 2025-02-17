@@ -25,7 +25,8 @@ use crate::run_tests::cleanup::{cleanup, cleanup_on_signal};
 use crate::run_tests::types::*;
 use crate::KIT_CACHE;
 
-const HYPERDRIVE_RELEASE_BASE_URL: &str = "https://github.com/hyperware-ai/hyperdrive/releases/download";
+const HYPERDRIVE_RELEASE_BASE_URL: &str =
+    "https://github.com/hyperware-ai/hyperdrive/releases/download";
 pub const HYPERWARE_OWNER: &str = "hyperware-ai";
 const HYPERDRIVE_REPO: &str = "hyperdrive";
 const LOCAL_PREFIX: &str = "hyperdrive-";
