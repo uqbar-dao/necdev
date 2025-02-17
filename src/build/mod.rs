@@ -39,7 +39,7 @@ const RUST_SRC_PATH: &str = "src/lib.rs";
 const PACKAGE_JSON_NAME: &str = "package.json";
 const COMPONENTIZE_MJS_NAME: &str = "componentize.mjs";
 const HYPERWARE_WIT_1_0_0_URL: &str =
-    //"https://raw.githubusercontent.com/kinode-dao/hyperware-wit/v1.0.0/hyperware.wit";
+    //"https://raw.githubusercontent.com/hyperware-ai/hyperware-wit/v1.0.0/hyperware.wit";
     "https://gist.githubusercontent.com/nick1udwig/3cfef4c96d945513c5fbc69d6bfbb4d9/raw/46d9a404813009a2adab54e9cc3e950cbe14ba3f/hyperware.wit";
 const WASI_VERSION: &str = "27.0.0"; // TODO: un-hardcode
 const DEFAULT_WORLD_0_7_0: &str = "process";

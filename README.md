@@ -9,7 +9,7 @@ Documentation in the [Hyperware Book](https://book.hyperware.ai/kit/kit-dev-tool
 Install with cargo:
 
 ```bash
-cargo install --git https://github.com/kinode-dao/kit --locked
+cargo install --git https://github.com/hyperware-ai/kit --locked
 ```
 
 ### Updating
@@ -17,7 +17,7 @@ cargo install --git https://github.com/kinode-dao/kit --locked
 To update, re-run
 
 ```bash
-cargo install --git https://github.com/kinode-dao/kit --locked
+cargo install --git https://github.com/hyperware-ai/kit --locked
 ```
 
 or use
@@ -63,7 +63,7 @@ kit start-package
 kit --help
 ```
 
-`kit boot-fake-node` can also accept a `--runtime-path` argument that compiles the fake node binary from a local [Hyperdrive](https://github.com/kinode-dao/hyperdrive) repository.
+`kit boot-fake-node` can also accept a `--runtime-path` argument that compiles the fake node binary from a local [Hyperdrive](https://github.com/hyperware-ai/hyperdrive) repository.
 Use like (substituting path to Hyperdrive repo):
 
 ```bash
@@ -72,9 +72,9 @@ kit boot-fake-node --runtime-path ~/git/hyperdrive
 
 `kit` also contains tools for running tests.
 For details and examples, please see
-1. [Hyperdrive Book's example code](https://github.com/kinode-dao/hyperware-book/tree/main/code).
-2. `kit`s templates, available through `kit new` or [here](https://github.com/kinode-dao/kit/tree/master/src/new/templates/rust).
-3. [https://github.com/kinode-dao/core_tests](https://github.com/kinode-dao/core_tests).
+1. [Hyperdrive Book's example code](https://github.com/hyperware-ai/hyperware-book/tree/main/code).
+2. `kit`s templates, available through `kit new` or [here](https://github.com/hyperware-ai/kit/tree/master/src/new/templates/rust).
+3. [https://github.com/hyperware-ai/core_tests](https://github.com/hyperware-ai/core_tests).
 
 ## UI Development
 

@@ -84,7 +84,7 @@ fn install(
 #[instrument(level = "trace", skip_all)]
 fn check_manifest(pkg_dir: &Path, manifest_file_name: &str) -> Result<()> {
     let manifest_path = pkg_dir.join(manifest_file_name);
-    let book_link = make_remote_link("https://book.hyperware.ai/my_first_app/chapter_1.html?highlight=manifest.json#pkgmanifestjson", "Kinode book");
+    let book_link = make_remote_link("https://book.hyperware.ai/my_first_app/chapter_1.html?highlight=manifest.json#pkgmanifestjson", "Hyperware book");
     let manifest = fs::File::open(&manifest_path).with_suggestion(|| {
         format!("Missing required manifest.json file. See discussion {book_link}")
     })?;

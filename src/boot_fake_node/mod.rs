@@ -25,8 +25,8 @@ use crate::run_tests::cleanup::{cleanup, cleanup_on_signal};
 use crate::run_tests::types::*;
 use crate::KIT_CACHE;
 
-const HYPERDRIVE_RELEASE_BASE_URL: &str = "https://github.com/kinode-dao/hyperdrive/releases/download";
-pub const HYPERWARE_OWNER: &str = "kinode-dao";
+const HYPERDRIVE_RELEASE_BASE_URL: &str = "https://github.com/hyperware-ai/hyperdrive/releases/download";
+pub const HYPERWARE_OWNER: &str = "hyperware-ai";
 const HYPERDRIVE_REPO: &str = "hyperdrive";
 const LOCAL_PREFIX: &str = "hyperdrive-";
 pub const CACHE_EXPIRY_SECONDS: u64 = 300;
@@ -157,7 +157,7 @@ pub fn get_platform_runtime_name(is_simulation_mode: bool) -> Result<String> {
                 "OS/Architecture {}/{} not amongst pre-built [Linux/x86_64, Linux/aarch64, Apple/arm64, Apple/x86_64].",
                 os_name,
                 architecture_name,
-            ).with_suggestion(|| "Use the `--runtime-path` flag to build a local copy of the https://github.com/kinode-dao/hyperdrive repo")
+            ).with_suggestion(|| "Use the `--runtime-path` flag to build a local copy of the https://github.com/hyperware-ai/hyperdrive repo")
             );
         }
     };

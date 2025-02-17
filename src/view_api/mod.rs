@@ -133,7 +133,7 @@ async fn parse_response(
                 let e_string = e.to_string();
                 if e_string.contains("Failed with status code:") {
                     eyre!("{e_string}\ncheck logs (default at {KIT_LOG_PATH_DEFAULT}) for full http response")
-                        .with_suggestion(|| format!("is Kinode running at url {url}?"))
+                        .with_suggestion(|| format!("is Hyperdrive running at url {url}?"))
                 } else {
                     eyre!(e_string)
                 }
