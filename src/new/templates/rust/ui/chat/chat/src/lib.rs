@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use crate::kinode::process::chat::{
+use crate::hyperware::process::chat::{
     ChatMessage, Request as ChatRequest, Response as ChatResponse, SendRequest,
 };
-use kinode_process_lib::logging::{error, info, init_logging, Level};
-use kinode_process_lib::{
+use hyperware_process_lib::logging::{error, info, init_logging, Level};
+use hyperware_process_lib::{
     await_message, call_init, get_blob,
     http::server::{
         send_response, HttpBindingConfig, HttpServer, HttpServerRequest, StatusCode,

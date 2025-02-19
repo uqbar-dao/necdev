@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 use tokio::time::{sleep, Duration};
 use tracing::{debug, info, instrument};
 
-use kinode_process_lib::kernel_types::PackageManifestEntry;
+use hyperware_process_lib::kernel_types::PackageManifestEntry;
 
 use crate::boot_fake_node;
 use crate::build;
@@ -18,7 +18,7 @@ use crate::chain;
 use crate::inject_message;
 use crate::start_package;
 
-use crate::kinode::process::tester::{FailResponse, Response as TesterResponse};
+use crate::hyperware::process::tester::{FailResponse, Response as TesterResponse};
 
 pub mod cleanup;
 use cleanup::{cleanup, cleanup_on_signal, drain_print_runtime};
@@ -309,7 +309,7 @@ async fn build_packages(
 
     info!("Starting node to host dependencies...");
     let port = test.nodes[0].port.clone();
-    let home = PathBuf::from("/tmp/kinode-fake-node");
+    let home = PathBuf::from("/tmp/hyperware-fake-node");
     let nodes = vec![Node {
         port: port.clone(),
         home,
@@ -488,7 +488,7 @@ async fn wait_until_booted(
             }
         };
     }
-    Err(eyre!("kit run-tests: could not connect to Kinode"))
+    Err(eyre!("kit run-tests: could not connect to node"))
 }
 
 #[instrument(level = "trace", skip_all)]
@@ -549,9 +549,9 @@ async fn load_caps(test_package_paths: &Vec<PathBuf>, port: u16) -> Result<()> {
         let manifest_path = test_package_path.join("pkg").join("manifest.json");
 
         let manifest = fs::File::open(manifest_path)
-            .with_suggestion(|| "Missing required manifest.json file. See discussion at https://book.kinode.org/my_first_app/chapter_1.html?highlight=manifest.json#pkgmanifestjson")?;
+            .with_suggestion(|| "Missing required manifest.json file. See discussion at https://book.hyperware.ai/my_first_app/chapter_1.html?highlight=manifest.json#pkgmanifestjson")?;
         let manifest: Vec<PackageManifestEntry> = serde_json::from_reader(manifest)
-            .with_suggestion(|| "Failed to parse required manifest.json file. See discussion at https://book.kinode.org/my_first_app/chapter_1.html?highlight=manifest.json#pkgmanifestjson")?;
+            .with_suggestion(|| "Failed to parse required manifest.json file. See discussion at https://book.hyperware.ai/my_first_app/chapter_1.html?highlight=manifest.json#pkgmanifestjson")?;
         if manifest.len() != 1 {
             return Err(eyre!(""));
         }
@@ -839,7 +839,7 @@ pub async fn execute(config_path: PathBuf) -> Result<()> {
                     } else {
                         "debug"
                     })
-                    .join("kinode")
+                    .join("hyperdrive")
             } else {
                 runtime_path
             };
@@ -848,7 +848,7 @@ pub async fn execute(config_path: PathBuf) -> Result<()> {
                 false,
             )?
             else {
-                return Err(eyre!("couldn't get Kinode version"));
+                return Err(eyre!("couldn't get Hyperdrive version"));
             };
             let version = output
                 .split('\n')

@@ -10,7 +10,7 @@ use color_eyre::{
 };
 use fs_err as fs;
 use serde::Deserialize;
-use tracing::{error, warn, Level};
+use tracing::{error, instrument, warn, Level};
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{
     filter, fmt, layer::SubscriberExt, prelude::*, util::SubscriberInitExt, EnvFilter,
@@ -37,6 +37,15 @@ struct Commit {
     sha: String,
 }
 
+#[instrument(level = "trace", skip_all)]
+fn parse_u64_with_underscores(s: &str) -> Result<u64, &'static str> {
+    let clean_string = s.replace('_', "");
+    clean_string
+        .parse::<u64>()
+        .map_err(|_| "Invalid number format")
+}
+
+#[instrument(level = "trace", skip_all)]
 fn parse_u128_with_underscores(s: &str) -> Result<u128, &'static str> {
     let clean_string = s.replace('_', "");
     clean_string
@@ -44,6 +53,7 @@ fn parse_u128_with_underscores(s: &str) -> Result<u128, &'static str> {
         .map_err(|_| "Invalid number format")
 }
 
+#[instrument(level = "trace", skip_all)]
 async fn get_latest_commit_sha_from_branch(
     owner: &str,
     repo: &str,
@@ -121,10 +131,12 @@ fn init_tracing(log_path: PathBuf) -> tracing_appender::non_blocking::WorkerGuar
     guard
 }
 
+#[instrument(level = "trace", skip_all)]
 async fn execute(
     usage: clap::builder::StyledStr,
     matches: Option<(&str, &clap::ArgMatches)>,
 ) -> Result<()> {
+    println!("execute");
     match matches {
         Some(("boot-fake-node", matches)) => {
             let runtime_path = matches
@@ -143,6 +155,7 @@ async fn execute(
             let release = matches.get_one::<bool>("RELEASE").unwrap();
             let verbosity = matches.get_one::<u8>("VERBOSITY").unwrap();
 
+            println!("boot_fake_node: {runtime_path:?}");
             boot_fake_node::execute(
                 runtime_path,
                 version.clone(),
@@ -389,6 +402,7 @@ async fn execute(
             let max_fee_per_gas = matches
                 .get_one::<u128>("MAX_FEE_PER_GAS")
                 .and_then(|mfpg| Some(mfpg.clone()));
+            let mock = matches.get_one::<bool>("MOCK").unwrap();
 
             publish::execute(
                 &package_dir,
@@ -402,6 +416,7 @@ async fn execute(
                 *gas_limit,
                 max_priority_fee,
                 max_fee_per_gas,
+                mock,
             )
             .await
         }
@@ -482,11 +497,12 @@ async fn execute(
     }
 }
 
+#[instrument(level = "trace", skip_all)]
 async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
     Ok(command!()
         .name("kit")
         .version(env!("CARGO_PKG_VERSION"))
-        .about("Development tool\x1b[1mkit\x1b[0m for Kinode")
+        .about("Development tool\x1b[1mkit\x1b[0m for Hyperware")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .disable_version_flag(true)
@@ -503,13 +519,13 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('r')
                 .long("runtime-path")
-                .help("Path to Kinode core repo (overrides --version)")
+                .help("Path to Hyperdrive repo (overrides --version)")
             )
             .arg(Arg::new("VERSION")
                 .action(ArgAction::Set)
                 .short('v')
                 .long("version")
-                .help("Version of Kinode binary to use (overridden by --runtime-path)")
+                .help("Version of Hyperdrive binary to use (overridden by --runtime-path)")
                 .default_value("latest")
                 .value_parser(PossibleValuesParser::new({
                     let mut possible_values = vec!["latest".to_string()];
@@ -517,11 +533,11 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                         None,
                         None,
                         &boot_fake_node::get_platform_runtime_name(true)?
-                    ).await?;
+                    ).await.unwrap_or_default();
                     remote_values.truncate(MAX_REMOTE_VALUES);
-                    if remote_values.len() == 0 {
-                        possible_values = vec![];
-                    }
+                    //if remote_values.len() == 0 {
+                    //    possible_values = vec![];
+                    //}
                     possible_values.append(&mut remote_values);
                     possible_values
                 }))
@@ -539,7 +555,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .short('o')
                 .long("home")
                 .help("Path to home directory for fake node")
-                .default_value("/tmp/kinode-fake-node")
+                .default_value("/tmp/hyperdrive-fake-node")
             )
             .arg(Arg::new("NODE_NAME")
                 .action(ArgAction::Set)
@@ -595,13 +611,13 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('r')
                 .long("runtime-path")
-                .help("Path to Kinode core repo (overrides --version)")
+                .help("Path to Hyperdrive repo (overrides --version)")
             )
             .arg(Arg::new("VERSION")
                 .action(ArgAction::Set)
                 .short('v')
                 .long("version")
-                .help("Version of Kinode binary to use (overridden by --runtime-path)")
+                .help("Version of Hyperdrive to use (overridden by --runtime-path)")
                 .default_value("latest")
                 .value_parser(PossibleValuesParser::new({
                     let mut possible_values = vec!["latest".to_string()];
@@ -611,9 +627,9 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                         &boot_fake_node::get_platform_runtime_name(false)?
                     ).await?;
                     remote_values.truncate(MAX_REMOTE_VALUES);
-                    if remote_values.len() == 0 {
-                        possible_values = vec![];
-                    }
+                    //if remote_values.len() == 0 {
+                    //    possible_values = vec![];
+                    //}
                     possible_values.append(&mut remote_values);
                     possible_values
                 }))
@@ -660,7 +676,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
             )
         )
         .subcommand(Command::new("build")
-            .about("Build a Kinode package")
+            .about("Build a Hyperware package")
             .visible_alias("b")
             .arg(Arg::new("DIR")
                 .action(ArgAction::Set)
@@ -708,7 +724,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('p')
                 .long("port")
-                .help("localhost node port; for remote see https://book.kinode.org/hosted-nodes.html#using-kit-with-your-hosted-node")
+                .help("localhost node port; for remote see https://book.hyperware.ai/hosted-nodes.html#using-kit-with-your-hosted-node")
                 .default_value("8080")
                 .value_parser(value_parser!(u16))
             )
@@ -766,7 +782,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
             )
         )
         .subcommand(Command::new("build-start-package")
-            .about("Build and start a Kinode package")
+            .about("Build and start a Hyperware package")
             .visible_alias("bs")
             .arg(Arg::new("DIR")
                 .action(ArgAction::Set)
@@ -777,7 +793,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('p')
                 .long("port")
-                .help("localhost node port; for remote see https://book.kinode.org/hosted-nodes.html#using-kit-with-your-hosted-node")
+                .help("localhost node port; for remote see https://book.hyperware.ai/hosted-nodes.html#using-kit-with-your-hosted-node")
                 .default_value("8080")
                 .value_parser(value_parser!(u16))
             )
@@ -887,7 +903,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('v')
                 .long("version")
-                .help("Version of Kinode binary to run chain for (foundry version must match Kinode version)")
+                .help("Version of Hyperdrive binary to run chain for")
                 .default_value("latest")
                 .value_parser(PossibleValuesParser::new({
                     let mut possible_values = vec!["latest".to_string()];
@@ -895,11 +911,11 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                         None,
                         None,
                         &boot_fake_node::get_platform_runtime_name(false)?
-                    ).await?;
+                    ).await.unwrap_or_default();
                     remote_values.truncate(MAX_REMOTE_VALUES);
-                    if remote_values.len() == 0 {
-                        possible_values = vec![];
-                    }
+                    //if remote_values.len() == 0 {
+                    //    possible_values = vec![];
+                    //}
                     possible_values.append(&mut remote_values);
                     possible_values
                 }))
@@ -931,14 +947,14 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('o')
                 .long("host")
-                .help("Host URL/IP Kinode is running on (not required for disconnect)")
+                .help("Host URL/IP node is running on (not required for disconnect)")
                 .required(false)
             )
             .arg(Arg::new("HOST_PORT")
                 .action(ArgAction::Set)
                 .short('p')
                 .long("port")
-                .help("Remote (host) port Kinode is running on")
+                .help("Remote (host) port node is running on")
                 .value_parser(value_parser!(u16))
                 .required(false)
             )
@@ -955,7 +971,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('p')
                 .long("port")
-                .help("localhost node port; for remote see https://book.kinode.org/hosted-nodes.html#using-kit-with-your-hosted-node")
+                .help("localhost node port; for remote see https://book.hyperware.ai/hosted-nodes.html#using-kit-with-your-hosted-node")
                 .default_value("8080")
                 .value_parser(value_parser!(u16))
             )
@@ -973,7 +989,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
             )
         )
         .subcommand(Command::new("inject-message")
-            .about("Inject a message to a running Kinode")
+            .about("Inject a message to a running node")
             .visible_alias("i")
             .arg(Arg::new("PROCESS")
                 .action(ArgAction::Set)
@@ -989,7 +1005,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('p')
                 .long("port")
-                .help("localhost node port; for remote see https://book.kinode.org/hosted-nodes.html#using-kit-with-your-hosted-node")
+                .help("localhost node port; for remote see https://book.hyperware.ai/hosted-nodes.html#using-kit-with-your-hosted-node")
                 .default_value("8080")
                 .value_parser(value_parser!(u16))
             )
@@ -1015,24 +1031,24 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
             )
         )
         .subcommand(Command::new("new")
-            .about("Create a Kinode template package")
+            .about("Create a Hyperware template package")
             .visible_alias("n")
             .arg(Arg::new("DIR")
                 .action(ArgAction::Set)
-                .help("Path to create template directory at (must contain only a-z, A-Z, 0-9, `-`)")
+                .help("Path to create template directory at (must contain only a-z, 0-9, `-`)")
                 .required(true)
             )
             .arg(Arg::new("PACKAGE")
                 .action(ArgAction::Set)
                 .short('a')
                 .long("package")
-                .help("Name of the package (must contain only a-z, A-Z, 0-9, `-`) [default: DIR]")
+                .help("Name of the package (must contain only a-z, 0-9, `-`) [default: DIR]")
             )
             .arg(Arg::new("PUBLISHER")
                 .action(ArgAction::Set)
                 .short('u')
                 .long("publisher")
-                .help("Name of the publisher (must contain only a-z, A-Z, 0-9, `-`, `.`)")
+                .help("Name of the publisher (must contain only a-z, 0-9, `-`, `.`)")
                 .default_value("template.os")
             )
             .arg(Arg::new("LANGUAGE")
@@ -1120,7 +1136,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .long("gas-limit")
                 .help("The ETH transaction gas limit")
                 .default_value("1_000_000")
-                .value_parser(clap::builder::ValueParser::new(parse_u128_with_underscores))
+                .value_parser(clap::builder::ValueParser::new(parse_u64_with_underscores))
                 .required(false)
             )
             .arg(Arg::new("MAX_PRIORITY_FEE_PER_GAS")
@@ -1137,6 +1153,13 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .long("fee-per-gas")
                 .help("The ETH transaction max fee per gas [default: estimated from network conditions]")
                 .value_parser(clap::builder::ValueParser::new(parse_u128_with_underscores))
+                .required(false)
+            )
+            .arg(Arg::new("MOCK")
+                .action(ArgAction::SetTrue)
+                .short('m')
+                .long("mock")
+                .help("If set, don't actually publish: just dry-run")
                 .required(false)
             )
         )
@@ -1166,16 +1189,16 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('p')
                 .long("port")
-                .help("localhost node port; for remote see https://book.kinode.org/hosted-nodes.html#using-kit-with-your-hosted-node")
+                .help("localhost node port; for remote see https://book.hyperware.ai/hosted-nodes.html#using-kit-with-your-hosted-node")
                 .default_value("8080")
                 .value_parser(value_parser!(u16))
             )
         )
         .subcommand(Command::new("reset-cache")
-            .about("Reset kit cache (Kinode core binaries, logs, etc.)")
+            .about("Reset kit cache (Hyperdrive binaries, logs, etc.)")
         )
         .subcommand(Command::new("run-tests")
-            .about("Run Kinode tests")
+            .about("Run Hyperware tests")
             .visible_alias("t")
             .arg(Arg::new("PATH")
                 .action(ArgAction::Set)
@@ -1194,7 +1217,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
             )
         )
         .subcommand(Command::new("start-package")
-            .about("Start a built Kinode package")
+            .about("Start a built Hyprware package")
             .visible_alias("s")
             .arg(Arg::new("DIR")
                 .action(ArgAction::Set)
@@ -1205,7 +1228,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('p')
                 .long("port")
-                .help("localhost node port; for remote see https://book.kinode.org/hosted-nodes.html#using-kit-with-your-hosted-node")
+                .help("localhost node port; for remote see https://book.hyperware.ai/hosted-nodes.html#using-kit-with-your-hosted-node")
                 .default_value("8080")
                 .value_parser(value_parser!(u16))
             )
@@ -1236,7 +1259,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('p')
                 .long("port")
-                .help("localhost node port; for remote see https://book.kinode.org/hosted-nodes.html#using-kit-with-your-hosted-node")
+                .help("localhost node port; for remote see https://book.hyperware.ai/hosted-nodes.html#using-kit-with-your-hosted-node")
                 .default_value("8080")
                 .value_parser(value_parser!(u16))
             )
@@ -1251,8 +1274,10 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
     )
 }
 
+#[instrument(level = "trace", skip_all)]
 #[tokio::main]
 async fn main() -> Result<()> {
+    println!("main");
     let log_path =
         std::env::var("KIT_LOG_PATH").unwrap_or_else(|_| KIT_LOG_PATH_DEFAULT.to_string());
     let log_path = PathBuf::from(log_path);
@@ -1265,9 +1290,13 @@ async fn main() -> Result<()> {
         .into_os_string();
     let mut app = make_app(&current_dir).await?;
 
+    println!("main a");
     let usage = app.render_usage();
+    println!("main b");
     let matches = app.get_matches();
+    println!("main c");
     let matches = matches.subcommand();
+    println!("main d");
 
     let result = match execute(usage, matches).await {
         Ok(()) => Ok(()),
@@ -1277,7 +1306,7 @@ async fn main() -> Result<()> {
                 None => {}
                 Some(ee) => {
                     if ee.is_connect() {
-                        e = e.with_suggestion(|| "is Kinode running?");
+                        e = e.with_suggestion(|| "is Hyperdrive running?");
                     }
                 }
             }
@@ -1288,7 +1317,7 @@ async fn main() -> Result<()> {
     if let Some((subcommand, _)) = matches {
         if subcommand != "update" && GIT_BRANCH_NAME == "master" {
             if let Some(latest) = get_latest_commit_sha_from_branch(
-                boot_fake_node::KINODE_OWNER,
+                boot_fake_node::HYPERWARE_OWNER,
                 KIT_REPO,
                 KIT_MASTER_BRANCH,
             )

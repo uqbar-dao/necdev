@@ -1,8 +1,8 @@
-use crate::exports::kinode::process::file_transfer_worker::{
+use crate::exports::hyperware::process::file_transfer_worker::{
     DownloadRequest, Guest, Request as WorkerRequest, Response as WorkerResponse,
 };
-use crate::kinode::process::standard::Address as WitAddress;
-use kinode_process_lib::{our_capabilities, spawn, Address, OnExit, Request, Response};
+use crate::hyperware::process::standard::Address as WitAddress;
+use hyperware_process_lib::{our_capabilities, spawn, Address, OnExit, Request, Response};
 
 wit_bindgen::generate!({
     path: "target/wit",

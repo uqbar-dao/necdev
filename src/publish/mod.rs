@@ -18,7 +18,7 @@ use color_eyre::eyre::{eyre, Result};
 use fs_err as fs;
 use tracing::{info, instrument};
 
-use kinode_process_lib::kernel_types::Erc721Metadata;
+use hyperware_process_lib::kernel_types::Erc721Metadata;
 
 use crate::build::{download_file, make_pkg_publisher, read_and_update_metadata, zip_pkg};
 use crate::new::is_kimap_safe;
@@ -28,7 +28,6 @@ sol! {
         address who,
         bytes calldata label,
         bytes calldata initialization,
-        bytes calldata erc721Data,
         address implementation
     ) external returns (
         address tba
@@ -69,12 +68,12 @@ sol! {
 }
 
 const FAKE_KIMAP_ADDRESS: &str = "0xEce71a05B36CA55B895427cD9a440eEF7Cf3669D";
-const REAL_KIMAP_ADDRESS: &str = "0xcA92476B2483aBD5D82AEBF0b56701Bb2e9be658";
+const REAL_KIMAP_ADDRESS: &str = "0x000000000033e5CCbC52Ec7BDa87dB768f9aA93F";
 
 const FAKE_KINO_ACCOUNT_IMPL: &str = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
-const REAL_KINO_ACCOUNT_IMPL: &str = "0x38766C70a4FB2f23137D9251a1aA12b1143fC716";
+const REAL_KINO_ACCOUNT_IMPL: &str = "0x83119A31628F2c19f578b0CAC9A43eAbA8d8512b";
 
-const REAL_CHAIN_ID: u64 = 10;
+const REAL_CHAIN_ID: u64 = 8453;
 const FAKE_CHAIN_ID: u64 = 31337;
 
 const MULTICALL_ADDRESS: &str = "0xcA11bde05977b3631167028862bE2a173976CA11";
@@ -151,7 +150,7 @@ async fn check_remote_metadata(
     package_dir: &Path,
 ) -> Result<String> {
     let remote_metadata_dir = PathBuf::from(format!(
-        "/tmp/kinode-kit-cache/{}",
+        "/tmp/hyperware-kit-cache/{}",
         metadata.name.as_ref().unwrap(),
     ));
     if !remote_metadata_dir.exists() {
@@ -162,7 +161,13 @@ async fn check_remote_metadata(
     let remote_metadata = read_and_update_metadata(&remote_metadata_dir)?;
 
     // TODO: add derive(PartialEq) to Erc721
-    if serde_json::to_string(&metadata)? != serde_json::to_string(&remote_metadata)? {
+    let local_metadata_string = serde_json::to_string(&metadata).unwrap_or_default();
+    let local_metadata_value: serde_json::Value =
+        serde_json::from_str(&local_metadata_string).unwrap_or_default();
+    let remote_metadata_string = serde_json::to_string(&remote_metadata).unwrap_or_default();
+    let remote_metadata_value: serde_json::Value =
+        serde_json::from_str(&remote_metadata_string).unwrap_or_default();
+    if local_metadata_value != remote_metadata_value {
         return Err(eyre!(
             "{} and {} metadata do not match",
             make_local_file_link_path(&package_dir.join("metadata.json"), "Local")
@@ -288,7 +293,6 @@ async fn prepare_kimap_put(
             who: wallet_address,
             label: name.into(),
             initialization: multicall.into(),
-            erc721Data: Bytes::default(),
             implementation: kino_account_impl,
         }
         .abi_encode();
@@ -317,6 +321,7 @@ pub async fn execute(
     gas_limit: u64,
     max_priority_fee_per_gas: Option<u128>,
     max_fee_per_gas: Option<u128>,
+    mock: &bool,
 ) -> Result<()> {
     if !package_dir.join("pkg").exists() {
         return Err(eyre!(
@@ -416,15 +421,19 @@ pub async fn execute(
 
     let tx_envelope = tx.build(&wallet).await?;
     let tx_encoded = tx_envelope.encoded_2718();
-    let tx = provider.send_raw_transaction(&tx_encoded).await?;
-    let tx_hash = format!("{:?}", tx.tx_hash());
-    let link = make_remote_link(
-        &format!("https://optimistic.etherscan.io/tx/{tx_hash}"),
-        &tx_hash,
-    );
-    info!(
-        "{} {name} tx sent: {link}",
-        if *unpublish { "unpublish" } else { "publish" }
-    );
+    if *mock {
+        info!(
+            "{} {name} tx mock successful",
+            if *unpublish { "unpublish" } else { "publish" }
+        );
+    } else {
+        let tx = provider.send_raw_transaction(&tx_encoded).await?;
+        let tx_hash = format!("{:?}", tx.tx_hash());
+        let link = make_remote_link(&format!("https://basescan.org/tx/{tx_hash}"), &tx_hash);
+        info!(
+            "{} {name} tx sent: {link}",
+            if *unpublish { "unpublish" } else { "publish" }
+        );
+    }
     Ok(())
 }

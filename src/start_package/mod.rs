@@ -5,7 +5,7 @@ use fs_err as fs;
 use serde_json::json;
 use tracing::{debug, info, instrument};
 
-use kinode_process_lib::kernel_types::{Erc721Metadata, PackageManifestEntry};
+use hyperware_process_lib::kernel_types::{Erc721Metadata, PackageManifestEntry};
 
 use crate::build::{hash_zip_pkg, make_pkg_publisher, make_zip_filename, read_and_update_metadata};
 use crate::new::is_kimap_safe;
@@ -84,7 +84,7 @@ fn install(
 #[instrument(level = "trace", skip_all)]
 fn check_manifest(pkg_dir: &Path, manifest_file_name: &str) -> Result<()> {
     let manifest_path = pkg_dir.join(manifest_file_name);
-    let book_link = make_remote_link("https://book.kinode.org/my_first_app/chapter_1.html?highlight=manifest.json#pkgmanifestjson", "Kinode book");
+    let book_link = make_remote_link("https://book.hyperware.ai/my_first_app/chapter_1.html?highlight=manifest.json#pkgmanifestjson", "Hyperware book");
     let manifest = fs::File::open(&manifest_path).with_suggestion(|| {
         format!("Missing required manifest.json file. See discussion {book_link}")
     })?;
@@ -106,11 +106,13 @@ fn check_manifest(pkg_dir: &Path, manifest_file_name: &str) -> Result<()> {
                 )
             })?;
         if !is_kimap_safe(file_name, false) {
-            return Err(eyre!("{manifest_json} file name '{file_name}' must be Kimap safe (a-z, A-Z, 0-9, - allowed)"));
+            return Err(eyre!(
+                "{manifest_json} file name '{file_name}' must be Kimap safe (a-z, 0-9, - allowed)"
+            ));
         }
         if !is_kimap_safe(file_path, false) {
             return Err(eyre!(
-                "{manifest_json} file path {:?} must be Kimap safe (a-z, A-Z, 0-9, - allowed)",
+                "{manifest_json} file path {:?} must be Kimap safe (a-z, 0-9, - allowed)",
                 entry.process_wasm_path,
             ));
         }

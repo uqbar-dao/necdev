@@ -6,7 +6,7 @@ ENV NVM_DIR=/root/.nvm \
 RUN . ~/.bashrc \
     && . ~/.cargo/env \
     && . $NVM_DIR/nvm.sh \
-    && cargo install --git https://github.com/kinode-dao/kit --locked --tag v0.8.0
+    && cargo install --git https://github.com/hyperware-ai/kit --locked --tag v0.8.0
 
 WORKDIR /input
 

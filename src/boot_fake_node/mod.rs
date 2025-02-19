@@ -25,10 +25,11 @@ use crate::run_tests::cleanup::{cleanup, cleanup_on_signal};
 use crate::run_tests::types::*;
 use crate::KIT_CACHE;
 
-const KINODE_RELEASE_BASE_URL: &str = "https://github.com/kinode-dao/kinode/releases/download";
-pub const KINODE_OWNER: &str = "kinode-dao";
-const KINODE_REPO: &str = "kinode";
-const LOCAL_PREFIX: &str = "kinode-";
+const HYPERDRIVE_RELEASE_BASE_URL: &str =
+    "https://github.com/hyperware-ai/hyperdrive/releases/download";
+pub const HYPERWARE_OWNER: &str = "hyperware-ai";
+const HYPERDRIVE_REPO: &str = "hyperdrive";
+const LOCAL_PREFIX: &str = "hyperdrive-";
 pub const CACHE_EXPIRY_SECONDS: u64 = 300;
 
 #[derive(Deserialize, Debug)]
@@ -77,7 +78,7 @@ pub fn extract_zip(archive_path: &Path) -> Result<()> {
 
 #[instrument(level = "trace", skip_all)]
 pub fn compile_runtime(path: &Path, release: bool, is_simulation_mode: bool) -> Result<()> {
-    info!("Compiling Kinode runtime...");
+    info!("Compiling Hyperdrive...");
 
     // build the packages
     let mut args = vec!["run", "-p", "build-packages"];
@@ -87,7 +88,7 @@ pub fn compile_runtime(path: &Path, release: bool, is_simulation_mode: bool) -> 
     build::run_command(Command::new("cargo").args(&args).current_dir(path), false)?;
 
     // build the runtime
-    let mut args = vec!["build", "-p", "kinode", "--color=always"];
+    let mut args = vec!["build", "-p", "hyperdrive", "--color=always"];
     if release {
         args.push("--release");
     }
@@ -105,7 +106,7 @@ pub fn compile_runtime(path: &Path, release: bool, is_simulation_mode: bool) -> 
     }
     build::run_command(&mut command, false)?;
 
-    info!("Done compiling Kinode runtime.");
+    info!("Done compiling Hyperdrive.");
     Ok(())
 }
 
@@ -115,10 +116,10 @@ async fn get_runtime_binary_inner(
     zip_name: &str,
     runtime_dir: &PathBuf,
 ) -> Result<()> {
-    let url = format!("{KINODE_RELEASE_BASE_URL}/{version}/{zip_name}");
+    let url = format!("{HYPERDRIVE_RELEASE_BASE_URL}/{version}/{zip_name}");
 
     let runtime_zip_path = runtime_dir.join(zip_name);
-    let runtime_path = runtime_dir.join("kinode");
+    let runtime_path = runtime_dir.join("hyperdrive");
 
     build::download_file(&url, &runtime_zip_path).await?;
     extract_zip(&runtime_zip_path)?;
@@ -157,12 +158,12 @@ pub fn get_platform_runtime_name(is_simulation_mode: bool) -> Result<String> {
                 "OS/Architecture {}/{} not amongst pre-built [Linux/x86_64, Linux/aarch64, Apple/arm64, Apple/x86_64].",
                 os_name,
                 architecture_name,
-            ).with_suggestion(|| "Use the `--runtime-path` flag to build a local copy of the https://github.com/kinode-dao/kinode repo")
+            ).with_suggestion(|| "Use the `--runtime-path` flag to build a local copy of the https://github.com/hyperware-ai/hyperdrive repo")
             );
         }
     };
     Ok(format!(
-        "kinode-{}{}.zip",
+        "hyperdrive-{}{}.zip",
         zip_name_midfix,
         if is_simulation_mode {
             "-simulation-mode"
@@ -183,11 +184,12 @@ pub async fn get_runtime_binary(
         version.to_string()
     } else {
         find_releases_with_asset_if_online(
-            Some(KINODE_OWNER),
-            Some(KINODE_REPO),
+            Some(HYPERWARE_OWNER),
+            Some(HYPERDRIVE_REPO),
             &get_platform_runtime_name(is_simulation_mode)?,
         )
-        .await?
+        .await
+        .unwrap_or_default()
         .first()
         .ok_or_else(|| eyre!("No releases found"))?
         .clone()
@@ -203,7 +205,7 @@ pub async fn get_runtime_binary(
             ""
         },
     ));
-    let runtime_path = runtime_dir.join("kinode");
+    let runtime_path = runtime_dir.join("hyperdrive");
 
     if !runtime_dir.exists() {
         fs::create_dir_all(&runtime_dir)?;
@@ -292,9 +294,12 @@ pub async fn find_releases_with_asset(
     repo: Option<&str>,
     asset_name: &str,
 ) -> Result<Vec<String>> {
-    let owner = owner.unwrap_or(KINODE_OWNER);
-    let repo = repo.unwrap_or(KINODE_REPO);
-    let releases = fetch_releases(owner, repo).await?;
+    let owner = owner.unwrap_or(HYPERWARE_OWNER);
+    let repo = repo.unwrap_or(HYPERDRIVE_REPO);
+    let Ok(releases) = fetch_releases(owner, repo).await else {
+        warn!("Failed to fetch releases from {owner}/{repo}. Using empty");
+        return Ok(vec![]);
+    };
     let filtered_releases: Vec<String> = releases
         .into_iter()
         .filter(|release| release.assets.iter().any(|asset| asset.name == asset_name))
@@ -420,11 +425,13 @@ pub async fn execute(
     verbosity: u8,
     mut args: Vec<String>,
 ) -> Result<()> {
+    println!("a");
     let detached = false; // TODO: to argument?
                           // TODO: factor out with run_tests?
     let (runtime_path, version) = match runtime_path {
         None => get_runtime_binary(&version, true).await?,
         Some(runtime_path) => {
+            println!("b");
             if !runtime_path.exists() {
                 return Err(eyre!("--runtime-path {:?} does not exist.", runtime_path));
             }
@@ -434,7 +441,7 @@ pub async fn execute(
                 runtime_path
                     .join("target")
                     .join(if release { "release" } else { "debug" })
-                    .join("kinode")
+                    .join("hyperdrive")
             } else {
                 runtime_path
             };
@@ -443,7 +450,7 @@ pub async fn execute(
                 false,
             )?
             else {
-                return Err(eyre!("couldn't get Kinode version"));
+                return Err(eyre!("couldn't get Hyperdrive version"));
             };
             let version = output
                 .split('\n')

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "./assets/vite.svg";
-import KinodeClientApi from "@kinode/client-api";
+import HyperwareClientApi from "@hyperware-ai/client-api";
 import "./App.css";
 import { SendChatMessage } from "./types/Chat";
 import useChatStore from "./store/chat";
@@ -23,7 +23,7 @@ function App() {
   const [target, setTarget] = useState("");
   const [message, setMessage] = useState("");
   const [nodeConnected, setNodeConnected] = useState(true);
-  const [api, setApi] = useState<KinodeClientApi | undefined>();
+  const [api, setApi] = useState<HyperwareClientApi | undefined>();
 
   useEffect(() => {
     // Get message history using http
@@ -34,16 +34,15 @@ function App() {
       })
       .catch((error) => console.error(error));
 
-    // Connect to the Kinode via websocket
+    // Connect to the Hyperdrive via websocket
     console.log('WEBSOCKET URL', WEBSOCKET_URL)
     if (window.our?.node && window.our?.process) {
-      const api = new KinodeClientApi({
+      const api = new HyperwareClientApi({
         uri: WEBSOCKET_URL,
         nodeId: window.our.node,
         processId: window.our.process,
         onOpen: (_event, _api) => {
-          console.log("Connected to Kinode");
-          // api.send({ data: "Hello World" });
+          console.log("Connected to Hyperware");
         },
         onMessage: (json, _api) => {
           console.log('WEBSOCKET MESSAGE', json)
@@ -140,7 +139,7 @@ function App() {
           </h4>
         </div>
       )}
-      <h2>Simple Chat on Kinode</h2>
+      <h2>Simple Chat on Hyperware</h2>
       <div className="card">
         <div
           style={{

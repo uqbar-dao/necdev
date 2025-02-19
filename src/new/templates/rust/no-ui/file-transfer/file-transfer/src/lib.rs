@@ -1,13 +1,13 @@
-use crate::kinode::process::file_transfer::{
+use crate::hyperware::process::file_transfer::{
     FileInfo, Request as TransferRequest, Response as TransferResponse,
 };
-use crate::kinode::process::file_transfer_worker::{
+use crate::hyperware::process::file_transfer_worker::{
     start_download, DownloadRequest, ProgressRequest, Request as WorkerRequest,
     Response as WorkerResponse,
 };
-use crate::kinode::process::standard::{Address as WitAddress, ProcessId as WitProcessId};
-use kinode_process_lib::logging::{error, info, init_logging, Level};
-use kinode_process_lib::{
+use crate::hyperware::process::standard::{Address as WitAddress, ProcessId as WitProcessId};
+use hyperware_process_lib::logging::{error, info, init_logging, Level};
+use hyperware_process_lib::{
     await_message, call_init, get_capability, println,
     vfs::{create_drive, metadata, open_dir, open_file, Directory, FileType},
     Address, Message, ProcessId, Response,
@@ -210,7 +210,7 @@ fn handle_tester_setup(our: &Address, drive_path: &str) -> anyhow::Result<()> {
 
 call_init!(init);
 fn init(our: Address) {
-    init_logging(&our, Level::DEBUG, Level::INFO, None, None).unwrap();
+    init_logging(Level::DEBUG, Level::INFO, None, None, None).unwrap();
     info!("begin");
 
     let drive_path = create_drive(our.package_id(), "files", None).unwrap();

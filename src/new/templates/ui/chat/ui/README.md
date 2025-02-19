@@ -1,4 +1,4 @@
-# Kinode UI Template
+# Hyperware UI Template
 
 Based on the Vite React Typescript template.
 

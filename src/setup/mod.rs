@@ -94,11 +94,11 @@ fn check_python_venv(python: &str) -> Result<()> {
     info!("Checking for python venv...");
     let venv_result = run_command(
         Command::new(python)
-            .args(&["-m", "venv", "kinode-test-venv"])
+            .args(&["-m", "venv", "hyperware-test-venv"])
             .current_dir("/tmp"),
         false,
     );
-    let venv_dir = PathBuf::from("/tmp/kinode-test-venv");
+    let venv_dir = PathBuf::from("/tmp/hyperware-test-venv");
     if venv_dir.exists() {
         fs::remove_dir_all(&venv_dir)?;
     }
@@ -373,20 +373,13 @@ pub fn check_js_deps() -> Result<Vec<Dependency>> {
 /// Check for Foundry deps, returning a Vec of Dependency if not found: can be automatically fetched?
 #[instrument(level = "trace", skip_all)]
 pub fn check_foundry_deps(
-    newer_than: Option<chrono::DateTime<chrono::Utc>>,
-    required_commit: Option<String>,
+    _newer_than: Option<chrono::DateTime<chrono::Utc>>,
+    _required_commit: Option<String>,
 ) -> Result<Vec<Dependency>> {
     if !is_command_installed("anvil")? {
-        return Ok(vec![Dependency::Foundry(required_commit)]);
+        return Ok(vec![Dependency::Foundry(_required_commit)]);
     }
-    let Some(newer_than) = newer_than else {
-        return Ok(vec![]);
-    };
-    let (_, installed_datetime) = get_foundry_version()?;
-    let installed_datetime = installed_datetime.parse::<chrono::DateTime<chrono::Utc>>()?;
-    if installed_datetime < newer_than {
-        return Ok(vec![Dependency::Foundry(required_commit)]);
-    }
+    // let (_, installed_datetime) = get_foundry_version()?;
     Ok(vec![])
 }
 

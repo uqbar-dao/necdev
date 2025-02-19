@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use crate::kinode::process::chat::{
+use crate::hyperware::process::chat::{
     ChatMessage, Request as ChatRequest, Response as ChatResponse, SendRequest,
 };
-use kinode_process_lib::logging::{error, info, init_logging, Level};
-use kinode_process_lib::{await_message, call_init, println, Address, Message, Request, Response};
+use hyperware_process_lib::logging::{error, info, init_logging, Level};
+use hyperware_process_lib::{await_message, call_init, println, Address, Message, Request, Response};
 
 wit_bindgen::generate!({
     path: "target/wit",
@@ -76,7 +76,7 @@ fn handle_message(
 
 call_init!(init);
 fn init(our: Address) {
-    init_logging(&our, Level::DEBUG, Level::INFO, None, None).unwrap();
+    init_logging(Level::DEBUG, Level::INFO, None, None, None).unwrap();
     info!("begin");
 
     let mut message_archive = HashMap::new();

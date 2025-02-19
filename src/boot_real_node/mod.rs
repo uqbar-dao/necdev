@@ -38,7 +38,7 @@ pub async fn execute(
                 runtime_path
                     .join("target")
                     .join(if release { "release" } else { "debug" })
-                    .join("kinode")
+                    .join("hyperdrive")
             } else {
                 runtime_path
             }

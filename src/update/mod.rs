@@ -12,7 +12,7 @@ pub fn execute(mut user_args: Vec<String>, branch: &str) -> Result<()> {
     let mut args: Vec<String> = vec![
         "install",
         "--git",
-        "https://github.com/kinode-dao/kit",
+        "https://github.com/hyperware-ai/kit",
         "--locked",
         "--branch",
         branch,
@@ -25,7 +25,7 @@ pub fn execute(mut user_args: Vec<String>, branch: &str) -> Result<()> {
 
     run_command(Command::new("cargo").args(&args[..]), true)?;
 
-    let cache_path = format!("{}/kinode-dao-kit-commits", KIT_CACHE);
+    let cache_path = format!("{}/hyperware-ai-kit-commits", KIT_CACHE);
     let cache_path = std::path::Path::new(&cache_path);
     if cache_path.exists() {
         fs::remove_dir_all(&cache_path)?;

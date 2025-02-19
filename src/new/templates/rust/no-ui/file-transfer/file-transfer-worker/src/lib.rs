@@ -1,10 +1,10 @@
-use crate::kinode::process::file_transfer_worker::{
+use crate::hyperware::process::file_transfer_worker::{
     ChunkRequest, DownloadRequest, InternalRequest, ProgressRequest, Request as WorkerRequest,
     Response as WorkerResponse,
 };
-use crate::kinode::process::standard::{Address as WitAddress, ProcessId as WitProcessId};
-use kinode_process_lib::logging::{error, info, init_logging, Level};
-use kinode_process_lib::{
+use crate::hyperware::process::standard::{Address as WitAddress, ProcessId as WitProcessId};
+use hyperware_process_lib::logging::{error, info, init_logging, Level};
+use hyperware_process_lib::{
     await_message, call_init, get_blob,
     vfs::{open_dir, open_file, Directory, File, SeekFrom},
     Address, Message, ProcessId, Request, Response,
@@ -213,7 +213,7 @@ fn handle_message(
 
 call_init!(init);
 fn init(our: Address) {
-    init_logging(&our, Level::DEBUG, Level::INFO, None, None).unwrap();
+    init_logging(Level::DEBUG, Level::INFO, None, None, None).unwrap();
     info!("worker: begin");
     let start = std::time::Instant::now();
 

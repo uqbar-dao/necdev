@@ -237,9 +237,9 @@ fn replace_vars(
 
 pub fn is_kimap_safe(input: &str, is_publisher: bool) -> bool {
     let expression = if is_publisher {
-        r"^[a-zA-Z0-9\-.]+$"
+        r"^[a-z0-9\-.]+$"
     } else {
-        r"^[a-zA-Z0-9\-]+$"
+        r"^[a-z0-9\-]+$"
     };
     let re = regex::Regex::new(expression).unwrap();
     re.is_match(input)
@@ -283,12 +283,12 @@ pub fn execute(
     if !is_kimap_safe(&package_name, false) {
         let error = if !is_from_dir {
             eyre!(
-                "`package_name` '{}' must be Kimap safe (a-z, A-Z, 0-9, - allowed).",
+                "`package_name` '{}' must be Kimap safe (a-z, 0-9, - allowed).",
                 package_name
             )
         } else {
             eyre!(
-                "`package_name` (derived from given directory {:?}) '{}' must be Kimap safe (a-z, A-Z, 0-9, - allowed).",
+                "`package_name` (derived from given directory {:?}) '{}' must be Kimap safe (a-z, 0-9, - allowed).",
                 new_dir,
                 package_name,
             )
@@ -297,7 +297,7 @@ pub fn execute(
     }
     if !is_kimap_safe(&publisher, true) {
         return Err(eyre!(
-            "`publisher` '{}' must be Kimap safe (a-z, A-Z, 0-9, -, . allowed).",
+            "`publisher` '{}' must be Kimap safe (a-z, 0-9, -, . allowed).",
             publisher
         ));
     }
@@ -359,7 +359,7 @@ pub fn execute(
             language.to_string(),
             template.to_string(),
             if ui { "'yes ui'" } else { "'no ui'" },
-            "https://book.kinode.org/kit/new.html#existshas-ui-enabled-vesion",
+            "https://book.hyperware.ai/kit/new.html#existshas-ui-enabled-vesion",
         ));
     }
 

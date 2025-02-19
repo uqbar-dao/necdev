@@ -1,8 +1,8 @@
-use crate::kinode::process::fibonacci::{
+use crate::hyperware::process::fibonacci::{
     Request as FibonacciRequest, Response as FibonacciResponse,
 };
-use kinode_process_lib::logging::{error, info, init_logging, Level};
-use kinode_process_lib::{await_message, call_init, Address, Message, Response};
+use hyperware_process_lib::logging::{error, info, init_logging, Level};
+use hyperware_process_lib::{await_message, call_init, Address, Message, Response};
 
 wit_bindgen::generate!({
     path: "target/wit",
@@ -83,8 +83,8 @@ fn handle_message(message: &Message) -> anyhow::Result<()> {
 }
 
 call_init!(init);
-fn init(our: Address) {
-    init_logging(&our, Level::DEBUG, Level::INFO, None, None).unwrap();
+fn init(_our: Address) {
+    init_logging(Level::DEBUG, Level::INFO, None, None, None).unwrap();
     info!("begin");
 
     loop {
