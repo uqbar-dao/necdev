@@ -903,7 +903,7 @@ async fn make_app(current_dir: &std::ffi::OsString) -> Result<Command> {
                 .action(ArgAction::Set)
                 .short('v')
                 .long("version")
-                .help("Version of Hyperdrive binary to run chain for (foundry version must match Hyperdrive version)")
+                .help("Version of Hyperdrive binary to run chain for")
                 .default_value("latest")
                 .value_parser(PossibleValuesParser::new({
                     let mut possible_values = vec!["latest".to_string()];
